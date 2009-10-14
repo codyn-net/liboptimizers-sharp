@@ -25,6 +25,7 @@ using System.Collections.Generic;
 
 namespace Optimization.Optimizers.PSO
 {
+	[Attributes.Optimizer(Description="Standard Particle Swarm Optimization")]
 	public class PSO : Optimizer
 	{
 		// Map to contain per parameter best particles
