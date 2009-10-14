@@ -33,22 +33,22 @@ namespace Optimization.Optimizers.PSO
 			Bounce
 		}
 		
-		[Setting("max-velocity", -1.0)]
+		[Setting("max-velocity", -1.0, Description="Maximum particle velocity (in fraction of parameter space)")]
 		public double MaxVelocity;
 		
-		[Setting("coginitive-factor", 1.49455)]
+		[Setting("coginitive-factor", 1.49455, Description="Cognitive factor constant")]
 		public double CognitiveFactor;
 		
-		[Setting("social-factor", 1.49455)]
+		[Setting("social-factor", 1.49455, Description="Social factor constant")]
 		public double SocialFactor;
 		
-		[Setting("constriction", 0.729)]
+		[Setting("constriction", 0.729, Description="Velocity update constriction")]
 		public double Constriction;
 		
-		[Setting("boundary-condition", BoundaryConditionType.Bounce)]
+		[Setting("boundary-condition", BoundaryConditionType.Bounce, Description="Boundary condition")]
 		public BoundaryConditionType BoundaryCondition;
 
-		[Setting("boundary-damping", 0.95)]
+		[Setting("boundary-damping", 0.95, Description="Boundary velocity damping when condition is Bounce")]
 		public double BoundaryDamping;
 	}
 }

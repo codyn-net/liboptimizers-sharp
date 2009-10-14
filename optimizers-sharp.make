@@ -47,7 +47,9 @@ FILES = \
 	AssemblyInfo.cs \
 	PSO/Particle.cs \
 	PSO/PSO.cs \
-	PSO/Settings.cs 
+	PSO/Settings.cs \
+	Systematic/Range.cs \
+	Systematic/Systematic.cs
 
 DATA_FILES = 
 
@@ -58,6 +60,7 @@ EXTRAS = \
 
 REFERENCES =  \
 	System \
+	System.Xml \
 	$(OPTIMIZATION_SHARP_LIBS)
 
 DLL_REFERENCES = 

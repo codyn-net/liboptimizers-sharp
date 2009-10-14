@@ -30,16 +30,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="optimization-sharp, Version=1.0.3573.35771, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="optimization-sharp, Version=1.0.3574.18417, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\.packeteer\install\lib\optimization-sharp\optimization-sharp.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="PSO\Particle.cs" />
     <Compile Include="PSO\PSO.cs" />
     <Compile Include="PSO\Settings.cs" />
+    <Compile Include="Systematic\Systematic.cs" />
+    <Compile Include="Systematic\Range.cs" />
+    <Compile Include="Systematic\Settings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Systematic\" />
+  </ItemGroup>
 </Project>
