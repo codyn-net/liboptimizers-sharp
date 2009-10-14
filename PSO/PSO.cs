@@ -45,6 +45,11 @@ namespace Optimization.Optimizers.PSO
 			d_bests = new Dictionary<string, Particle>();
 		}
 		
+		protected override Settings CreateSettings ()
+		{
+			return new Optimization.Optimizers.PSO.Settings();
+		}
+		
 		public override void Update(Solution solution)
 		{
 			// Update is implemented on the particle
