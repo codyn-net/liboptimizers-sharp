@@ -1,5 +1,5 @@
 /*
- *  Pso.cs - This file is part of optipso
+ *  PSO.cs - This file is part of optimizers-sharp
  *
  *  Copyright (C) 2009 - Jesse van den Kieboom
  *

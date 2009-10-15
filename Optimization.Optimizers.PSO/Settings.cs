@@ -1,5 +1,5 @@
 /*
- *  Settings.cs - This file is part of optipso
+ *  Settings.cs - This file is part of optimizers-sharp
  *
  *  Copyright (C) 2009 - Jesse van den Kieboom
  *
