@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{61CC5527-3D51-46F7-86D2-99D724678773}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <AssemblyName>optimizers-sharp</AssemblyName>
+    <AssemblyName>Optimization.Optimizers</AssemblyName>
     <RootNamespace>Optimization.Optimizers</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -30,23 +30,25 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="optimization-sharp, Version=1.0.3574.18417, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\.packeteer\install\lib\optimization-sharp\optimization-sharp.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="Optimization, Version=1.0.3575.20277, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\.packeteer\install\lib\optimization-sharp\Optimization.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="PSO\Particle.cs" />
-    <Compile Include="PSO\PSO.cs" />
-    <Compile Include="PSO\Settings.cs" />
-    <Compile Include="Systematic\Systematic.cs" />
-    <Compile Include="Systematic\Range.cs" />
-    <Compile Include="Systematic\Settings.cs" />
+    <Compile Include="Optimization.Optimizers\AssemblyInfo.cs" />
+    <Compile Include="Optimization.Optimizers.PSO\Particle.cs" />
+    <Compile Include="Optimization.Optimizers.PSO\PSO.cs" />
+    <Compile Include="Optimization.Optimizers.PSO\Settings.cs" />
+    <Compile Include="Optimization.Optimizers.Systematic\Systematic.cs" />
+    <Compile Include="Optimization.Optimizers.Systematic\Range.cs" />
+    <Compile Include="Optimization.Optimizers.Systematic\Settings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Folder Include="Systematic\" />
+    <Folder Include="Optimization.Optimizers\" />
+    <Folder Include="Optimization.Optimizers.PSO\" />
+    <Folder Include="Optimization.Optimizers.Systematic\" />
   </ItemGroup>
 </Project>

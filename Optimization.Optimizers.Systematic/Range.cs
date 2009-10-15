@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace Optimization.Optimizers.Systematic
 {
@@ -56,6 +57,11 @@ namespace Optimization.Optimizers.Systematic
 			{
 				yield return i;
 			}
+		}
+		
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 	}
 }

@@ -5,21 +5,21 @@
 if ENABLE_DEBUG
 ASSEMBLY_COMPILER_COMMAND = gmcs
 ASSEMBLY_COMPILER_FLAGS =  -noconfig -codepage:utf8 -warn:4 -optimize- -debug "-define:DEBUG"
-ASSEMBLY = bin/Debug/optimizers-sharp.dll
+ASSEMBLY = bin/Debug/Optimization.Optimizers.dll
 ASSEMBLY_MDB = $(ASSEMBLY).mdb
 COMPILE_TARGET = library
 PROJECT_REFERENCES = 
 BUILD_DIR = bin/Debug
 
-OPTIMIZERS_SHARP_DLL_MDB_SOURCE=bin/Debug/optimizers-sharp.dll.mdb
-OPTIMIZERS_SHARP_DLL_MDB=$(BUILD_DIR)/optimizers-sharp.dll.mdb
+OPTIMIZERS_SHARP_DLL_MDB_SOURCE=bin/Debug/Optimization.Optimizers.dll.mdb
+OPTIMIZERS_SHARP_DLL_MDB=$(BUILD_DIR)/Optimization.Optimizers.dll.mdb
 
 endif
 
 if ENABLE_RELEASE
 ASSEMBLY_COMPILER_COMMAND = gmcs
 ASSEMBLY_COMPILER_FLAGS =  -noconfig -codepage:utf8 -warn:4 -optimize-
-ASSEMBLY = bin/Release/optimizers-sharp.dll
+ASSEMBLY = bin/Release/Optimization.Optimizers.dll
 ASSEMBLY_MDB = 
 COMPILE_TARGET = library
 PROJECT_REFERENCES = 
@@ -44,12 +44,12 @@ RESGEN=resgen2
 all: $(ASSEMBLY) $(PROGRAMFILES) $(LINUX_PKGCONFIG) 
 
 FILES = \
-	AssemblyInfo.cs \
-	PSO/Particle.cs \
-	PSO/PSO.cs \
-	PSO/Settings.cs \
-	Systematic/Range.cs \
-	Systematic/Systematic.cs
+	Optimization.Optimizers/AssemblyInfo.cs \
+	Optimization.Optimizers.PSO/Particle.cs \
+	Optimization.Optimizers.PSO/PSO.cs \
+	Optimization.Optimizers.PSO/Settings.cs \
+	Optimization.Optimizers.Systematic/Range.cs \
+	Optimization.Optimizers.Systematic/Systematic.cs
 
 DATA_FILES = 
 
