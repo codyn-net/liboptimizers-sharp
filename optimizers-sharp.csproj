@@ -44,6 +44,9 @@
     <Compile Include="Optimization.Optimizers.Systematic\Systematic.cs" />
     <Compile Include="Optimization.Optimizers.Systematic\Range.cs" />
     <Compile Include="Optimization.Optimizers.Systematic\Settings.cs" />
+    <Compile Include="Optimization.Optimizers.SPSA\SPSA.cs" />
+    <Compile Include="Optimization.Optimizers.SPSA\Settings.cs" />
+    <Compile Include="Optimization.Optimizers.SPSA\Solution.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
