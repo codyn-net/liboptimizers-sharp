@@ -147,9 +147,9 @@ namespace Optimization.Optimizers.Systematic
 					dstep = (dmax - dmin) / 10;
 				}
 				
-				if (dmax - (dmin + dstep) >= dmax - dmin)
+				if (dmax > dmin != dstep > 0)
 				{
-					Console.Error.WriteLine("Invalid range ({1}, {2}, {3}): {0}", name.Value, dmin, dstep, dmax);
+					Console.Error.WriteLine("Invalid range ({1}, {2}, {3}): {0} ({4})", name.Value, dmin, dstep, dmax, dmax - dmin);
 					continue;
 				}
 				

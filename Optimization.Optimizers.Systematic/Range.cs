@@ -73,9 +73,12 @@ namespace Optimization.Optimizers.Systematic
 		
 		public IEnumerator<double> GetEnumerator()
 		{
-			for (double i = d_min; i <= d_max; i += d_step)
+			double i = d_min;
+			
+			while ((d_min < d_max && i <= d_max) || (d_min > d_max && i >= d_max))
 			{
 				yield return i;
+				i += d_step;
 			}
 		}
 		
