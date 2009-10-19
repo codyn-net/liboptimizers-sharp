@@ -49,7 +49,10 @@ FILES = \
 	Optimization.Optimizers.PSO/PSO.cs \
 	Optimization.Optimizers.PSO/Settings.cs \
 	Optimization.Optimizers.Systematic/Range.cs \
-	Optimization.Optimizers.Systematic/Systematic.cs
+	Optimization.Optimizers.Systematic/Systematic.cs \
+	Optimization.Optimizers.SPSA/SPSA.cs \
+	Optimization.Optimizers.SPSA/Settings.cs \
+	Optimization.Optimizers.SPSA/Solution.cs
 
 DATA_FILES = 
 
