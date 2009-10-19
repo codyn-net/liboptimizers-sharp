@@ -66,7 +66,8 @@ namespace Optimization.Optimizers.SPSA
 		
 		public void Update(double gradientRate, double learningRate)
 		{
-			double constant = (d_solutions[0].Fitness.Value - d_solutions[1].Fitness.Value) / (2 * gradientRate);
+			// Note: we do gradient _ascend_ not descend in this framework
+			double constant = (d_solutions[1].Fitness.Value - d_solutions[0].Fitness.Value) / (2 * gradientRate);
 			
 			for (int i = 0; i < Parameters.Count; ++i)
 			{
