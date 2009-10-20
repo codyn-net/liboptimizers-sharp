@@ -27,59 +27,58 @@ namespace Optimization.Optimizers.Systematic
 	[Optimization.Attributes.Optimizer(Description="Systematic search")]
 	public class Systematic : Optimization.Optimizer
 	{		
-		List<Range> d_ranges;
-		Queue<Solution> d_solutionQueue;
+		List<double[]> d_ranges;
+		uint d_currentId;
+		uint d_numberOfSolutions;
 		
 		public Systematic()
 		{
+			d_currentId = 0;
+			d_ranges = new List<double[]>();
+		}
+		
+		public new Optimization.Optimizers.Systematic.Settings Configuration
+		{
+			get
+			{
+				return base.Configuration as Optimization.Optimizers.Systematic.Settings;
+			}
+		}
+		
+		protected override Settings CreateSettings ()
+		{
+			return new Optimization.Optimizers.Systematic.Settings();
 		}
 		
 		public override void InitializePopulation()
 		{
-			d_solutionQueue = new Queue<Solution>();
-			
-			GenerateSolutions();
+			d_currentId = Configuration.StartIndex;
 			Update();
 		}
 		
-		private void Add(double[] values)
+		private Solution GenerateSolution(uint idx)
 		{
-			Optimization.Solution solution = CreateSolution((uint)d_solutionQueue.Count);
+			Optimization.Solution solution = CreateSolution(idx);
 			
 			// Set solution parameter template
 			solution.Parameters = Parameters;
+			
+			uint ptr = d_numberOfSolutions;
 
-			for (int i = 0; i < values.Length; ++i)
+			// Fill parameters
+			for (int i = 0; i < d_ranges.Count; ++i)
 			{
-				solution.Parameters[i].Value = values[i];
+				double[] values = d_ranges[i];
+				uint ptrRest = ptr / (uint)values.Length;
+
+				uint pidx = idx / ptrRest;
+				idx = idx % ptrRest;
+
+				solution.Parameters[i].Value = values[pidx];				
+				ptr = ptrRest;
 			}
-			
-			d_solutionQueue.Enqueue(solution);
-		}
-		
-		private void GenerateSolutions(int idx, double[] values)
-		{
-			foreach (double val in d_ranges[idx])
-			{
-				values[idx] = val;
-				
-				if (idx < d_ranges.Count - 1)
-				{
-					GenerateSolutions(idx + 1, values);
-				}
-				else
-				{
-					Add(values);
-				}
-			}
-		}
-		
-		private void GenerateSolutions()
-		{
-			double[] values = new double[d_ranges.Count];
-			GenerateSolutions(0, values);
-			
-			Configuration.MaxIterations = (uint)System.Math.Ceiling(d_solutionQueue.Count / (double)Configuration.PopulationSize);
+
+			return solution;
 		}
 		
 		private double Evaluate(string s)
@@ -100,7 +99,10 @@ namespace Optimization.Optimizers.Systematic
 			base.FromXml(root);
 			
 			// Parse systematic test ranges, and create parameters
-			d_ranges = new List<Range>();
+			d_ranges.Clear();
+			d_currentId = 0;
+			d_numberOfSolutions = 0;
+
 			XmlNodeList nodes = root.SelectNodes("boundaries/range");
 			
 			foreach (XmlNode node in nodes)
@@ -153,9 +155,23 @@ namespace Optimization.Optimizers.Systematic
 					continue;
 				}
 				
-				d_ranges.Add(new Range(sname, dmin, dstep, dmax));
+				Range range = new Range(sname, dmin, dstep, dmax);
+				double[] all = range.ToArray();
+				d_ranges.Add(all);
+				
+				if (d_numberOfSolutions == 0)
+				{
+					d_numberOfSolutions = (uint)all.Length;
+				}
+				else
+				{
+					d_numberOfSolutions *= (uint)all.Length;
+				}
+
 				Parameters.Add(new Parameter(sname, new Boundary(sname, dmin, dmax)));
 			}
+			
+			Configuration.MaxIterations = (uint)System.Math.Ceiling(d_numberOfSolutions / (double)Configuration.PopulationSize);
 		}
 		
 		public override void Update()
@@ -164,18 +180,19 @@ namespace Optimization.Optimizers.Systematic
 			
 			for (int i = 0; i < Configuration.PopulationSize; ++i)
 			{
-				if (d_solutionQueue.Count == 0)
+				if (d_currentId >= d_numberOfSolutions)
 				{
 					break;
 				}
 				
-				Add(d_solutionQueue.Dequeue());
+				Add(GenerateSolution(d_currentId));
+				d_currentId++;
 			}
 		}
 		
 		protected override bool Finished ()
 		{
-			return d_solutionQueue.Count == 0;
+			return d_currentId >= d_numberOfSolutions;
 		}
 	}
 }

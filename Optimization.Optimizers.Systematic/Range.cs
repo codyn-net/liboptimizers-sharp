@@ -86,5 +86,17 @@ namespace Optimization.Optimizers.Systematic
 		{
 			return GetEnumerator();
 		}
+		
+		public double[] ToArray()
+		{
+			List<double> ret = new List<double>();
+			
+			foreach (double d in this)
+			{
+				ret.Add(d);
+			}
+			
+			return ret.ToArray();
+		}
 	}
 }
