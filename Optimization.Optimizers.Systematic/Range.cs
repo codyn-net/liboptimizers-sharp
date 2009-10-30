@@ -75,7 +75,7 @@ namespace Optimization.Optimizers.Systematic
 		{
 			double i = d_min;
 			
-			while ((d_min < d_max && i <= d_max) || (d_min > d_max && i >= d_max))
+			while ((d_min < d_max && i - 0.5 * d_step <= d_max) || (d_min > d_max && i - 0.5 * d_step >= d_max))
 			{
 				yield return i;
 				i += d_step;
