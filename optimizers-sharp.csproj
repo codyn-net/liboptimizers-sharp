@@ -31,7 +31,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <Reference Include="Optimization, Version=1.0.3576.19439, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="Optimization, Version=1.0.3590.2434, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\.packeteer\install\lib\optimization-sharp\Optimization.dll</HintPath>
     </Reference>
@@ -49,6 +49,9 @@
     <Compile Include="Optimization.Optimizers.SPSA\Solution.cs" />
     <Compile Include="Optimization.Optimizers.GA\GA.cs" />
     <Compile Include="Optimization.Optimizers.GA\Settings.cs" />
+    <Compile Include="Optimization.Optimizers.ADPSO\ADPSO.cs" />
+    <Compile Include="Optimization.Optimizers.ADPSO\Settings.cs" />
+    <Compile Include="Optimization.Optimizers.ADPSO\Particle.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -56,5 +59,6 @@
     <Folder Include="Optimization.Optimizers.PSO\" />
     <Folder Include="Optimization.Optimizers.Systematic\" />
     <Folder Include="Optimization.Optimizers.GA\" />
+    <Folder Include="Optimization.Optimizers.ADPSO\" />
   </ItemGroup>
 </Project>

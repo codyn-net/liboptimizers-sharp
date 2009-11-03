@@ -105,16 +105,11 @@ namespace Optimization.Optimizers.PSO
 			}
 		}
 		
-		private void UpdatePosition(int idx)
+		public void SetPosition(int idx, double newpos)
 		{
-			// Update the particle position using euler integration with the new velocity.
-			// This correctly handles the boundary conditions as set in the PSO optimizer
-			// settings.
-
 			Parameter parameter = Parameters[idx];
 			Boundary boundary = parameter.Boundary;
-			double newpos = parameter.Value + d_velocity[idx];
-			
+
 			// Update position to 'newpos' given a certain boundary condition
 			if (newpos > boundary.Max || newpos < boundary.Min)
 			{
@@ -148,6 +143,17 @@ namespace Optimization.Optimizers.PSO
 				// Within boundaries simply update position
 				parameter.Value = newpos;
 			}
+		}
+		
+		private void UpdatePosition(int idx)
+		{
+			// Update the particle position using euler integration with the new velocity.
+			// This correctly handles the boundary conditions as set in the PSO optimizer
+			// settings.
+			Parameter parameter = Parameters[idx];
+			double newpos = parameter.Value + d_velocity[idx];
+
+			SetPosition(idx, newpos);
 		}
 		
 		public void Update(Dictionary<string, Particle> bests)
@@ -236,6 +242,14 @@ namespace Optimization.Optimizers.PSO
 			// We assume here that we can just append the velocity
 			double span = parameter.Boundary.Max - parameter.Boundary.Min;
 			d_velocity.Add(State.Random.Range(-span, span) * factor);
+		}
+		
+		public List<double> Velocity
+		{
+			get
+			{
+				return d_velocity;
+			}
 		}
 	}
 }
