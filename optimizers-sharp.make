@@ -45,6 +45,11 @@ all: $(ASSEMBLY) $(PROGRAMFILES) $(LINUX_PKGCONFIG)
 
 FILES = \
 	Optimization.Optimizers/AssemblyInfo.cs \
+	Optimization.Optimizers.ADPSO/ADPSO.cs \
+	Optimization.Optimizers.ADPSO/Particle.cs \
+	Optimization.Optimizers.ADPSO/Settings.cs \
+	Optimization.Optimizers.GA/GA.cs \
+	Optimization.Optimizers.GA/Settings.cs \
 	Optimization.Optimizers.PSO/Particle.cs \
 	Optimization.Optimizers.PSO/PSO.cs \
 	Optimization.Optimizers.PSO/Settings.cs \
