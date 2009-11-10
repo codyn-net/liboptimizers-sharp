@@ -23,6 +23,7 @@ using System.Collections.Generic;
 
 namespace Optimization.Optimizers.ADPSO
 {
+	[Optimization.Attributes.Optimizer(Description="Adaptive Diversity Particle Swarm Optimization")]
 	public class ADPSO : Optimization.Optimizers.PSO.PSO
 	{
 		List<double> d_factors;
