@@ -28,7 +28,7 @@ namespace Optimization.Optimizers.SPSA
 		[Attributes.Setting("learning-rate", "0.01", Description="Learning rate (ak), expression")]
 		public string LearningRate;
 		
-		[Attributes.Setting("gradient-rate", "0.01", Description="Gradient rate (ck), expression")]
-		public string GradientRate;
+		[Attributes.Setting("perturbation-rate", "0.01", Description="Perturbation rate (ck), expression")]
+		public string PerturbationRate;
 	}
 }

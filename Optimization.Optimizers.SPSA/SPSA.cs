@@ -28,14 +28,14 @@ namespace Optimization.Optimizers.SPSA
 	public class SPSA : Optimizer
 	{
 		Optimization.Math.Expression d_learningRate;
-		Optimization.Math.Expression d_gradientRate;
+		Optimization.Math.Expression d_perturbationRate;
 		List<Optimizers.SPSA.Solution> d_solutions;
 		Dictionary<string, object> d_rateContext;
 		
 		public SPSA()
 		{
 			d_learningRate = new Optimization.Math.Expression();
-			d_gradientRate = new Optimization.Math.Expression();
+			d_perturbationRate = new Optimization.Math.Expression();
 			
 			d_solutions = new List<Optimizers.SPSA.Solution>();
 			d_rateContext = new Dictionary<string, object>();
@@ -54,16 +54,16 @@ namespace Optimization.Optimizers.SPSA
 		public override void Initialize ()
 		{
 			d_learningRate.Parse(Configuration.LearningRate);
-			d_gradientRate.Parse(Configuration.GradientRate);
+			d_perturbationRate.Parse(Configuration.PerturbationRate);
 
 			base.Initialize();
 		}
 		
-		private double GradientRate
+		private double PerturbationRate
 		{
 			get
 			{
-				return d_gradientRate.Evaluate(d_rateContext);
+				return d_perturbationRate.Evaluate(d_rateContext);
 			}
 		}
 		
@@ -79,7 +79,7 @@ namespace Optimization.Optimizers.SPSA
 		{
 			// For each of our solutions, we generate the two gradient solutions
 			// and put it in the population
-			double gradientRate = GradientRate;
+			double perturbationRate = PerturbationRate;
 
 			for (uint i = 0; i < Configuration.PopulationSize; ++i)
 			{
@@ -89,7 +89,7 @@ namespace Optimization.Optimizers.SPSA
 				solution.Reset();
 				
 				d_solutions.Add(solution);
-				Population.AddRange(solution.Generate(gradientRate));
+				Population.AddRange(solution.Generate(perturbationRate));
 			}
 		}
 		
@@ -97,8 +97,10 @@ namespace Optimization.Optimizers.SPSA
 		{
 			foreach (Solution solution in d_solutions)
 			{
-				solution.Update(GradientRate, LearningRate);
-				Optimization.Solution[] generated = solution.Generate(GradientRate);
+				double perturbationRate = PerturbationRate;
+
+				solution.Update(perturbationRate, LearningRate);
+				Optimization.Solution[] generated = solution.Generate(perturbationRate);
 				
 				Population[(int)solution.Id * 2] = generated[0];
 				Population[(int)solution.Id * 2 + 1] = generated[1];

@@ -42,7 +42,7 @@ namespace Optimization.Optimizers.SPSA
 			return 2 * System.Math.Round(State.Random.NextDouble()) - 1;
 		}
 		
-		public Optimization.Solution[] Generate(double gradientRate)
+		public Optimization.Solution[] Generate(double perturbationRate)
 		{
 			d_solutions[0].Parameters = Parameters;
 			d_solutions[1].Parameters = Parameters;
@@ -54,8 +54,8 @@ namespace Optimization.Optimizers.SPSA
 				Parameter parameter = Parameters[i];
 				d_deltas[i] = GenerateDelta();
 				
-				double thetaPlus = parameter.Value + d_deltas[i] * gradientRate;
-				double thetaMin = parameter.Value - d_deltas[i] * gradientRate;
+				double thetaPlus = parameter.Value + d_deltas[i] * perturbationRate;
+				double thetaMin = parameter.Value - d_deltas[i] * perturbationRate;
 				
 				d_solutions[0].Parameters[i].Value = thetaPlus;
 				d_solutions[1].Parameters[i].Value = thetaMin;
@@ -64,10 +64,10 @@ namespace Optimization.Optimizers.SPSA
 			return d_solutions;
 		}
 		
-		public void Update(double gradientRate, double learningRate)
+		public void Update(double perturbationRate, double learningRate)
 		{
 			// Note: we do gradient _ascend_ not descend in this framework
-			double constant = (d_solutions[1].Fitness.Value - d_solutions[0].Fitness.Value) / (2 * gradientRate);
+			double constant = (d_solutions[1].Fitness.Value - d_solutions[0].Fitness.Value) / (2 * perturbationRate);
 			
 			for (int i = 0; i < Parameters.Count; ++i)
 			{
