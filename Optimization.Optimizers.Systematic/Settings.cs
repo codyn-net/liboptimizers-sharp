@@ -24,7 +24,7 @@ namespace Optimization.Optimizers.Systematic
 {
 	public class Settings : Optimization.Optimizer.Settings
 	{
-		[Attributes.Setting("start-index", 0)]
+		[Attributes.Setting("start-index", 0, Description="Index to start systematic search")]
 		public uint StartIndex;
 	}
 }
