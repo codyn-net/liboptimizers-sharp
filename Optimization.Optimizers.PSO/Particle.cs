@@ -111,38 +111,36 @@ namespace Optimization.Optimizers.PSO
 			Boundary boundary = parameter.Boundary;
 
 			// Update position to 'newpos' given a certain boundary condition
-			if (newpos > boundary.Max || newpos < boundary.Min)
+			while (newpos > boundary.Max || newpos < boundary.Min)
 			{
 				switch (Configuration.BoundaryCondition)
 				{
 					// No boundary condition
 					case PSONS.Settings.BoundaryConditionType.None:
 						parameter.Value = newpos;
-					break;
+						return;
 					// Sticky boundary condition, clip to boundary
 					case PSONS.Settings.BoundaryConditionType.Stick:
 						parameter.Value = System.Math.Max(System.Math.Min(boundary.Max, newpos), boundary.Min);
-					break;
+						return;
 					// Bounce boundary condition, reflect and damp
 					case PSONS.Settings.BoundaryConditionType.Bounce:
 						if (newpos > boundary.Max)
 						{
-							parameter.Value = boundary.Max - Configuration.BoundaryDamping * (newpos - boundary.Max);
+							newpos = boundary.Max - Configuration.BoundaryDamping * (newpos - boundary.Max);
 						}
 						else
 						{
-							parameter.Value = boundary.Min + Configuration.BoundaryDamping * (newpos - boundary.Min);
+							newpos = boundary.Min + Configuration.BoundaryDamping * (boundary.Min - newpos);
 						}
 						
 						d_velocity[idx] = Configuration.BoundaryDamping * -d_velocity[idx];
 					break;
 				}
 			}
-			else
-			{
-				// Within boundaries simply update position
-				parameter.Value = newpos;
-			}
+			
+			// Update actual position
+			parameter.Value = newpos;
 		}
 		
 		private void UpdatePosition(int idx)
@@ -196,9 +194,9 @@ namespace Optimization.Optimizers.PSO
 				// Limit the maximum velocity according to the MaxVelocity setting
 				double maxvel = settings.MaxVelocity * (parameter.Boundary.Max - parameter.Boundary.Min);
 				
-				if (maxvel > 0 && d_velocity[i] > maxvel)
+				if (maxvel > 0 && System.Math.Abs(d_velocity[i]) > maxvel)
 				{
-					d_velocity[i] = maxvel;
+					d_velocity[i] = d_velocity[i] > 0 ? maxvel : -maxvel;
 				}
 				
 				// Update the particle position
