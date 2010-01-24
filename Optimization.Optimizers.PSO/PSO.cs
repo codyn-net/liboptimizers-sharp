@@ -28,9 +28,6 @@ namespace Optimization.Optimizers.PSO
 	[Attributes.Optimizer(Description="Standard Particle Swarm Optimization")]
 	public class PSO : Optimizer
 	{
-		// Map to contain per parameter best particles
-		Dictionary<string, Particle> d_bests;
-		
 		// Override 'Configuration' property returning subclassed Settings
 		public new PSO.Settings Configuration
 		{
@@ -42,47 +39,24 @@ namespace Optimization.Optimizers.PSO
 		
 		public PSO()
 		{
-			d_bests = new Dictionary<string, Particle>();
 		}
 		
-		protected override Settings CreateSettings ()
+		protected override Settings CreateSettings()
 		{
+			// Create pso settings
 			return new Optimization.Optimizers.PSO.Settings();
 		}
 		
 		protected override Solution CreateSolution(uint idx)
 		{
+			// Create new particle
 			return new Particle(idx, Fitness, State);
 		}
 		
 		public override void Update(Solution solution)
 		{
 			// Update is implemented on the particle
-			(solution as Particle).Update(d_bests);
-		}
-		
-		public override void InitializePopulation()
-		{
-			base.InitializePopulation();
-			d_bests.Clear();
-		}
-		
-		protected override void UpdateBest()
-		{
-			base.UpdateBest();
-			
-			// Update per parameter bests
-			foreach (Solution solution in Population)
-			{
-				foreach (Parameter parameter in solution.Parameters)
-				{
-					if (!d_bests.ContainsKey(parameter.Name) ||
-					     solution.Fitness > d_bests[parameter.Name].Fitness)
-					{
-						d_bests[parameter.Name] = solution.Clone() as Particle;
-					}
-				}
-			}
+			((Particle)solution).Update((Particle)Best);
 		}
 	}
 }
