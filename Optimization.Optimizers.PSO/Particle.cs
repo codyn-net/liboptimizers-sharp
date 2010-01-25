@@ -239,5 +239,13 @@ namespace Optimization.Optimizers.PSO
 				return d_velocity;
 			}
 		}
+		
+		public Particle PersonalBest
+		{
+			get
+			{
+				return d_personalBest;
+			}
+		}
 	}
 }
