@@ -1,3 +1,9 @@
+liboptimizers-sharp (1.1-2) UNRELEASED; urgency=low
+
+  * Fixed version
+
+ -- Jesse van den Kieboom <jvanden@grijpc10.epfl.ch>  Mon, 30 Nov 2009 20:55:32 +0100
+
 liboptimizers-sharp (1.1-1) UNRELEASED; urgency=low
 
   * New upstream release 
