@@ -157,7 +157,7 @@ namespace Optimization.Optimizers.PSO
 			}
 		}
 		
-		public void Update(Particle gbest)
+		public virtual void Update(Particle gbest)
 		{
 			// Main update function, applies the PSO update rule to update particle velocity
 			// and position.
