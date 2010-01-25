@@ -1,7 +1,7 @@
 Name: optimizers-sharp
 Description: optimizers-sharp
-Version: 1.1
-Libraries=@expanded_libdir@/@PACKAGE@/Optimization.Optimizers.dll
+Version: @VERSION@
+Libraries=@expanded_libdir@/liboptimization-sharp/optimizers/Optimization.Optimizers.dll
 
 Requires: optimization-sharp
-Libs: -r:@expanded_libdir@/@PACKAGE@/Optimization.Optimizers.dll
+Libs: -r:@expanded_libdir@/liboptimization-sharp/optimizers/Optimization.Optimizers.dll

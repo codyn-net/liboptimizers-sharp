@@ -28,12 +28,12 @@ namespace Optimization.Optimizers.PSO
 	public class Particle : Solution
 	{
 		List<double> d_velocity;
-		Dictionary<string, Particle> d_bests;
+		Particle d_personalBest;
 		
 		public Particle(uint id, Fitness fitness, State state) : base (id, fitness, state)
 		{
 			d_velocity = new List<double>();
-			d_bests = new Dictionary<string, Particle>();
+			d_personalBest = null;
 		}
 
 		public override void Copy(Optimization.Solution other)
@@ -41,7 +41,8 @@ namespace Optimization.Optimizers.PSO
 			base.Copy(other);
 			
 			Particle particle = other as Particle;
-			particle.d_velocity.AddRange(d_velocity);
+			d_velocity = new List<double>(particle.d_velocity);
+			d_personalBest = particle.d_personalBest;
 		}
 
 		public override object Clone()
@@ -82,26 +83,17 @@ namespace Optimization.Optimizers.PSO
 		private void UpdateVelocityData()
 		{
 			// Create string of velocity data to save in the database 'velocity' column
-			List<string> data = new List<string>();
-			
-			foreach (double vel in d_velocity)
+			for (int i = 0; i < d_velocity.Count; ++i)
 			{
-				data.Add(vel.ToString());
+				Data[String.Format("v{0}", i)] = d_velocity[i];
 			}
-			
-			// Set velocity string in velocity column data
-			Data["velocity"] = String.Join(",", data.ToArray());
 		}
 		
-		private void UpdateBest()
+		protected virtual void UpdateBest()
 		{
-			// For each parameter, update the best solution
-			foreach (Parameter parameter in Parameters)
+			if (d_personalBest == null || Fitness > d_personalBest.Fitness)
 			{
-				if (!d_bests.ContainsKey(parameter.Name) || Fitness > d_bests[parameter.Name].Fitness)
-				{
-					d_bests[parameter.Name] = Clone() as Particle;
-				}
+				d_personalBest = (Particle)Clone();
 			}
 		}
 		
@@ -154,11 +146,21 @@ namespace Optimization.Optimizers.PSO
 			SetPosition(idx, newpos);
 		}
 		
-		public void Update(Dictionary<string, Particle> bests)
+		private void LimitVelocity(int idx)
+		{
+			PSONS.Settings settings = Configuration;
+			double maxvel = settings.MaxVelocity * (Parameters[idx].Boundary.Max - Parameters[idx].Boundary.Min);
+				
+			if (maxvel > 0 && System.Math.Abs(d_velocity[idx]) > maxvel)
+			{
+				d_velocity[idx] = d_velocity[idx] > 0 ? maxvel : -maxvel;
+			}
+		}
+		
+		public virtual void Update(Particle gbest)
 		{
 			// Main update function, applies the PSO update rule to update particle velocity
-			// and position. This update function works with bests on a per parameter basis
-			// to allow optimization with a dynamical number of parameters
+			// and position.
 			UpdateBest();
 			
 			PSONS.Settings settings = Configuration;
@@ -169,21 +171,20 @@ namespace Optimization.Optimizers.PSO
 
 				double r1 = State.Random.Range(0, 1);
 				double r2 = State.Random.Range(0, 1);
+
 				double pg = 0;
 				double pl = 0;
 				
-				// Calculate per parameter global best
-				if (bests.ContainsKey(parameter.Name))
+				// Global best difference
+				if (gbest != null)
 				{
-					Parameter best = bests[parameter.Name].Parameters[i];
-					pg = best.Value - parameter.Value;					
+					pg = gbest.Parameters[i].Value - parameter.Value;
 				}
 				
-				// Calculate per parameter local best
-				if (d_bests.ContainsKey(parameter.Name))
+				// Local best difference
+				if (d_personalBest != null)
 				{
-					Parameter best = d_bests[parameter.Name].Parameters[i];
-					pl = best.Value - parameter.Value;
+					pl = d_personalBest.Parameters[i].Value - parameter.Value;
 				}
 				
 				// PSO velocity update rule
@@ -192,13 +193,8 @@ namespace Optimization.Optimizers.PSO
 				                                         r2 * settings.SocialFactor * pg);
 
 				// Limit the maximum velocity according to the MaxVelocity setting
-				double maxvel = settings.MaxVelocity * (parameter.Boundary.Max - parameter.Boundary.Min);
-				
-				if (maxvel > 0 && System.Math.Abs(d_velocity[i]) > maxvel)
-				{
-					d_velocity[i] = d_velocity[i] > 0 ? maxvel : -maxvel;
-				}
-				
+				LimitVelocity(i);
+
 				// Update the particle position
 				UpdatePosition(i);
 			}
@@ -247,6 +243,14 @@ namespace Optimization.Optimizers.PSO
 			get
 			{
 				return d_velocity;
+			}
+		}
+		
+		public virtual Particle PersonalBest
+		{
+			get
+			{
+				return d_personalBest;
 			}
 		}
 	}

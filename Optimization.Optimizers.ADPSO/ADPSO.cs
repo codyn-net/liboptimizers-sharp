@@ -38,12 +38,12 @@ namespace Optimization.Optimizers.ADPSO
 			}
 		}
 		
-		protected override Settings CreateSettings ()
+		protected override Settings CreateSettings()
 		{
 			return new Optimization.Optimizers.ADPSO.Settings();
 		}
 		
-		protected override Solution CreateSolution (uint idx)
+		protected override Solution CreateSolution(uint idx)
 		{
 			return new Particle(idx, Fitness, State);
 		}
@@ -54,7 +54,8 @@ namespace Optimization.Optimizers.ADPSO
 			{
 				return;
 			}
-
+			
+			// Factors is a list of the boundary dimensions for each parameter
 			d_factors = new List<double>();
 			d_normalization = 0;
 			
@@ -71,6 +72,8 @@ namespace Optimization.Optimizers.ADPSO
 		{
 			double sum = 0;
 			
+			// Calculate the euclidian distance between two particles as fraction
+			// of the parameter space (i.e. for each parameter 0 -> 1)
 			for (int i = 0; i < a.Parameters.Count; ++i)
 			{
 				double dd = a.Parameters[i].Value - b.Parameters[i].Value;
