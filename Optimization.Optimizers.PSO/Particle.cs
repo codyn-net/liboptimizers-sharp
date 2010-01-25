@@ -41,8 +41,8 @@ namespace Optimization.Optimizers.PSO
 			base.Copy(other);
 			
 			Particle particle = other as Particle;
-			particle.d_velocity.AddRange(d_velocity);
-			particle.d_personalBest = d_personalBest;
+			d_velocity = new List<double>(particle.d_velocity);
+			d_personalBest = particle.d_personalBest;
 		}
 
 		public override object Clone()
@@ -89,7 +89,7 @@ namespace Optimization.Optimizers.PSO
 			}
 		}
 		
-		private void UpdateBest()
+		protected virtual void UpdateBest()
 		{
 			if (d_personalBest == null || Fitness > d_personalBest.Fitness)
 			{
@@ -176,10 +176,16 @@ namespace Optimization.Optimizers.PSO
 				double pl = 0;
 				
 				// Global best difference
-				pg = gbest.Parameters[i].Value - parameter.Value;
+				if (gbest != null)
+				{
+					pg = gbest.Parameters[i].Value - parameter.Value;
+				}
 				
 				// Local best difference
-				pl = d_personalBest.Parameters[i].Value - parameter.Value;
+				if (d_personalBest != null)
+				{
+					pl = d_personalBest.Parameters[i].Value - parameter.Value;
+				}
 				
 				// PSO velocity update rule
 				d_velocity[i] = settings.Constriction * (d_velocity[i] + 
@@ -240,7 +246,7 @@ namespace Optimization.Optimizers.PSO
 			}
 		}
 		
-		public Particle PersonalBest
+		public virtual Particle PersonalBest
 		{
 			get
 			{
