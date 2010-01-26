@@ -252,6 +252,10 @@ namespace Optimization.Optimizers.PSO
 			{
 				return d_personalBest;
 			}
+			set
+			{
+				d_personalBest = value;
+			}
 		}
 	}
 }
