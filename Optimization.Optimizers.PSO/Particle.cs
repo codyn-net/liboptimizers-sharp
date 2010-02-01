@@ -103,8 +103,13 @@ namespace Optimization.Optimizers.PSO
 			Boundary boundary = parameter.Boundary;
 
 			// Update position to 'newpos' given a certain boundary condition
-			while (newpos > boundary.Max || newpos < boundary.Min)
+			for (int i = 0; i < 10; ++i)
 			{
+				if (!(newpos > boundary.Max || newpos < boundary.Min))
+				{
+					break;
+				}
+
 				switch (Configuration.BoundaryCondition)
 				{
 					// No boundary condition
@@ -131,6 +136,15 @@ namespace Optimization.Optimizers.PSO
 				}
 			}
 			
+			if (newpos > boundary.Max)
+			{
+				newpos = boundary.Max;
+			}
+			else if (newpos < boundary.Min)
+			{
+				newpos = boundary.Min;
+			}
+
 			// Update actual position
 			parameter.Value = newpos;
 		}
