@@ -83,10 +83,14 @@ namespace Optimization.Optimizers.PSO
 		private void UpdateVelocityData()
 		{
 			// Create string of velocity data to save in the database 'velocity' column
-			for (int i = 0; i < d_velocity.Count; ++i)
+			List<string> vel = new List<string>();
+			
+			foreach (double v in d_velocity)
 			{
-				Data[String.Format("v{0}", i)] = d_velocity[i];
+				vel.Add(v.ToString());
 			}
+
+			Data["velocity"] = String.Join(",", vel.ToArray());
 		}
 		
 		protected virtual void UpdateBest()
