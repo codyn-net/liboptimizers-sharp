@@ -216,6 +216,8 @@ namespace Optimization.Optimizers.PSO
 				// Update the particle position
 				UpdatePosition(i);
 			}
+			
+			UpdateVelocityData();
 		}
 
 		public override void Add(Parameter parameter)
