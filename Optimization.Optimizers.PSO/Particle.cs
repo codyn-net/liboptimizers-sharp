@@ -93,7 +93,7 @@ namespace Optimization.Optimizers.PSO
 			Data["velocity"] = String.Join(",", vel.ToArray());
 		}
 		
-		protected virtual void UpdateBest()
+		public virtual void UpdateBest()
 		{
 			if (d_personalBest == null || Fitness > d_personalBest.Fitness)
 			{
@@ -179,8 +179,6 @@ namespace Optimization.Optimizers.PSO
 		{
 			// Main update function, applies the PSO update rule to update particle velocity
 			// and position.
-			UpdateBest();
-			
 			PSONS.Settings settings = Configuration;
 
 			for (int i = 0; i < Parameters.Count; ++i)
