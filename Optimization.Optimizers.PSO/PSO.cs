@@ -53,6 +53,16 @@ namespace Optimization.Optimizers.PSO
 			return new Particle(idx, Fitness, State);
 		}
 		
+		protected override void UpdateBest()
+		{
+			foreach (Solution sol in Population)
+			{
+				((Particle)sol).UpdateBest();
+			}
+
+			base.UpdateBest();
+		}
+		
 		public override void Update(Solution solution)
 		{
 			// Update is implemented on the particle
