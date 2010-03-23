@@ -28,6 +28,8 @@ namespace Optimization.Optimizers.PSO
 	[Attributes.Optimizer(Description="Standard Particle Swarm Optimization")]
 	public class PSO : Optimizer
 	{
+		private bool d_loadingFromStorage;
+
 		// Override 'Configuration' property returning subclassed Settings
 		public new PSO.Settings Configuration
 		{
@@ -39,6 +41,7 @@ namespace Optimization.Optimizers.PSO
 		
 		public PSO()
 		{
+			d_loadingFromStorage = false;
 		}
 		
 		protected override Settings CreateSettings()
@@ -67,6 +70,36 @@ namespace Optimization.Optimizers.PSO
 		{
 			// Update is implemented on the particle
 			((Particle)solution).Update((Particle)Best);
+		}
+		
+		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer, Storage.Records.Solution solution, Optimization.Solution sol)
+		{
+			base.FromStorage(storage, optimizer, solution, sol);
+			
+			if (d_loadingFromStorage)
+			{
+				return;
+			}
+			
+			// Add some protection because we don't want to recursively load the best particle
+			d_loadingFromStorage = true;
+
+			Storage.Records.Solution best = storage.ReadSolution(-1, (int)sol.Id);
+			Particle particle = (Particle)sol;
+			
+			if (best != null)
+			{
+				Solution b = CreateSolution((uint)best.Index);
+				FromStorage(storage, optimizer, best, b);
+				
+				particle.PersonalBest = (Particle)b;
+			}
+			else
+			{
+				particle.PersonalBest = null;
+			}
+			
+			d_loadingFromStorage = false;
 		}
 	}
 }

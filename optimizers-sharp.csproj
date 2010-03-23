@@ -31,10 +31,11 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <Reference Include="Optimization, Version=1.0.3590.2434, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="Optimization, Version=1.0.3734.17462, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\.packeteer\install\lib\optimization-sharp\Optimization.dll</HintPath>
+      <HintPath>..\..\..\..\.packeteer\install\lib\liboptimization-sharp\Optimization.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Optimization.Optimizers\AssemblyInfo.cs" />

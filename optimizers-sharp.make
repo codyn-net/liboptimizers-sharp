@@ -70,6 +70,7 @@ EXTRAS = \
 REFERENCES =  \
 	System \
 	System.Xml \
+	System.Data \
 	$(OPTIMIZATION_SHARP_LIBS)
 
 DLL_REFERENCES = 
