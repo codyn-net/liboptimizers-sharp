@@ -1,3 +1,9 @@
+liboptimizers2-sharp (2.0-1) UNRELEASED; urgency=low
+
+  * New upstream release
+
+ -- Jesse van den Kieboom <jvanden@grijpc10.epfl.ch>  Thu, 01 Apr 2010 15:44:18 +0200
+
 liboptimizers-sharp (1.7-1) UNRELEASED; urgency=low
 
   * New upstream release
