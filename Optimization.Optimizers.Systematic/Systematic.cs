@@ -21,20 +21,48 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
+using System.Data;
 
 namespace Optimization.Optimizers.Systematic
 {
 	[Optimization.Attributes.Optimizer(Description="Systematic search")]
 	public class Systematic : Optimization.Optimizer
 	{		
-		List<double[]> d_ranges;
+		List<Range> d_ranges;
 		uint d_currentId;
 		uint d_numberOfSolutions;
 		
 		public Systematic()
 		{
 			d_currentId = 0;
-			d_ranges = new List<double[]>();
+			d_ranges = new List<Range>();
+		}
+		
+		public override void Initialize()
+		{
+			base.Initialize();
+			
+			// Save ranges
+			StoreRanges();
+		}
+		
+		private void StoreRanges()
+		{
+			Storage.Query("DROP TABLE IF EXISTS `ranges`");
+			Storage.Query("CREATE TABLE `ranges` (`id` INTEGER PRIMARY KEY, `step` DOUBLE, `step_repr` TEXT, `steps` INT, `steps_repr` TEXT)");
+			
+			for (int i = 0; i < d_ranges.Count; ++i)
+			{
+				Range range = d_ranges[i];
+
+				Storage.Query(@"INSERT INTO `ranges` (`id`, `step`, `step_repr`, `steps`, `steps_repr`)
+				                VALUES (@0, @1, @2, @3, @4)",
+				              i + 1,
+				              range.Step.Value,
+				              range.Step.Representation,
+				              range.Steps != null ? range.Steps.Value : -1,
+				              range.Steps != null ? range.Steps.Representation : "");
+			}
 		}
 		
 		public new Optimization.Optimizers.Systematic.Settings Configuration
@@ -45,7 +73,7 @@ namespace Optimization.Optimizers.Systematic
 			}
 		}
 		
-		protected override Settings CreateSettings ()
+		protected override Settings CreateSettings()
 		{
 			return new Optimization.Optimizers.Systematic.Settings();
 		}
@@ -68,7 +96,9 @@ namespace Optimization.Optimizers.Systematic
 			// Fill parameters
 			for (int i = 0; i < d_ranges.Count; ++i)
 			{
-				double[] values = d_ranges[i];
+				Range range = d_ranges[i];
+				double[] values = range.ToArray();
+
 				uint ptrRest = ptr / (uint)values.Length;
 
 				uint pidx = idx / ptrRest;
@@ -81,19 +111,6 @@ namespace Optimization.Optimizers.Systematic
 			return solution;
 		}
 		
-		private double Evaluate(string s)
-		{
-			Optimization.Math.Expression expression = new Optimization.Math.Expression();
-
-			if (!expression.Parse(s))
-			{
-				Console.Error.WriteLine("Could not parse expression: {0}", s);
-				return 0;
-			}
-			
-			return expression.Evaluate(Optimization.Math.Constants.Context);
-		}
-		
 		public override void FromXml(System.Xml.XmlNode root)
 		{
 			base.FromXml(root);
@@ -103,61 +120,46 @@ namespace Optimization.Optimizers.Systematic
 			d_currentId = 0;
 			d_numberOfSolutions = 0;
 
-			XmlNodeList nodes = root.SelectNodes("boundaries/range");
+			XmlNodeList nodes = root.SelectNodes("parameters/parameter");
 			
 			foreach (XmlNode node in nodes)
 			{
-				XmlAttribute min = node.Attributes["min"];
-				XmlAttribute step = node.Attributes["step"];
-				XmlAttribute steps = node.Attributes["steps"];
-				XmlAttribute max = node.Attributes["max"];
 				XmlAttribute name = node.Attributes["name"];
-				
+
 				if (name == null)
 				{
-					Console.Error.WriteLine("Name not specified in range");
 					continue;
 				}
 				
-				if (min == null)
-				{
-					Console.Error.WriteLine("Minimum value not specified in range: {0}", name.Value);
-					continue;
-				}
+				// Get previously parsed parameter, min and max values are already taken from
+				// the boundary here. We just need to determine the range, using step or steps
+				Parameter parameter = Parameter(name.Value);
+
+				XmlAttribute step = node.Attributes["step"];
+				XmlAttribute steps = node.Attributes["steps"];
 				
-				if (max == null)
-				{
-					Console.Error.WriteLine("Maximum value not specified in range: {0}", name.Value);
-					continue;
-				}
-				
-				double dmin = Evaluate(min.Value);
-				double dmax = Evaluate(max.Value);
-				double dstep;
-				string sname = name.Value;
+				Range range = new Range(name.Value, parameter.Boundary);
 				
 				if (step != null)
 				{
-					dstep = Evaluate(step.Value);
+					range.Step.Representation = step.Value;
 				}
 				else if (steps != null)
 				{
-					dstep = (dmax - dmin) / (Evaluate(steps.Value) - 1);
-				}
-				else
-				{
-					dstep = (dmax - dmin) / 10;
+					range.Steps = new NumericSetting();
+					range.Steps.Representation = steps.Value;
+					
+					range.Step.Value = (range.Boundary.Max - range.Boundary.Min) / (range.Steps.Value - 1);
 				}
 				
-				if (dmax > dmin != dstep > 0)
+				if (range.Boundary.Max > range.Boundary.Min != range.Step.Value > 0)
 				{
-					Console.Error.WriteLine("Invalid range ({1}, {2}, {3}): {0} ({4})", name.Value, dmin, dstep, dmax, dmax - dmin);
+					Console.Error.WriteLine("Invalid range ({0})", name.Value);
 					continue;
 				}
 				
-				Range range = new Range(sname, dmin, dstep, dmax);
+				d_ranges.Add(range);
 				double[] all = range.ToArray();
-				d_ranges.Add(all);
 				
 				if (d_numberOfSolutions == 0)
 				{
@@ -167,8 +169,6 @@ namespace Optimization.Optimizers.Systematic
 				{
 					d_numberOfSolutions *= (uint)all.Length;
 				}
-
-				Parameters.Add(new Parameter(sname, new Boundary(sname, dmin, dmax)));
 			}
 			
 			Configuration.MaxIterations = (uint)System.Math.Ceiling(d_numberOfSolutions / (double)Configuration.PopulationSize);
@@ -193,6 +193,58 @@ namespace Optimization.Optimizers.Systematic
 		protected override bool Finished ()
 		{
 			return d_currentId >= d_numberOfSolutions;
+		}
+		
+		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer)
+		{
+			base.FromStorage(storage, optimizer);
+			
+			d_ranges.Clear();
+			
+			d_numberOfSolutions = 0;
+			
+			// Read ranges from the storage
+			storage.Query("SELECT `parameters`.`name`, `ranges`.`step_repr`, `ranges`.`steps_repr` LEFT JOIN `parameters` ON (`parameters`.`id` = `ranges`.`id`) FROM `ranges` ORDER BY `id`", delegate (IDataReader reader) {
+				string name = (string)reader["name"];
+				string step = (string)reader["step"];
+				string steps = (string)reader["steps"];
+				
+				Parameter parameter = Parameter(name);
+				Range range = new Range(parameter.Name, parameter.Boundary);
+				
+				range.Step.Representation = step;
+
+				if (!String.IsNullOrEmpty(steps))
+				{
+					range.Steps = new NumericSetting();
+					range.Steps.Representation = steps;
+				}
+				
+				d_ranges.Add(range);
+				double[] all = range.ToArray();
+				
+				if (d_numberOfSolutions == 0)
+				{
+					d_numberOfSolutions = (uint)all.Length;
+				}
+				else
+				{
+					d_numberOfSolutions *= (uint)all.Length;
+				}
+				
+				return true;
+			});
+			
+			object val = Storage.QueryValue("SELECT MAX(`index`) FROM `solution`");
+			
+			if (val != null)
+			{
+				d_currentId = (uint)val + 1;
+			}
+			else
+			{
+				d_currentId = 0;
+			}
 		}
 	}
 }

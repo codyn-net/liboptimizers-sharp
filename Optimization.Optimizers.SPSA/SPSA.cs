@@ -50,12 +50,17 @@ namespace Optimization.Optimizers.SPSA
 				return base.Configuration as Optimizers.SPSA.Settings;
 			}
 		}
-
-		public override void Initialize ()
+		
+		public virtual void Setup()
 		{
 			d_learningRate.Parse(Configuration.LearningRate);
 			d_perturbationRate.Parse(Configuration.PerturbationRate);
+			
+			d_rateContext["k"] = CurrentIteration;
+		}
 
+		public override void Initialize()
+		{
 			base.Initialize();
 		}
 		
@@ -75,6 +80,11 @@ namespace Optimization.Optimizers.SPSA
 			}
 		}
 		
+		protected virtual Solution CreateProxySolution(uint id)
+		{
+			return new Solution(id, Fitness, State);
+		}
+		
 		public override void InitializePopulation()
 		{
 			// For each of our solutions, we generate the two gradient solutions
@@ -83,13 +93,15 @@ namespace Optimization.Optimizers.SPSA
 
 			for (uint i = 0; i < Configuration.PopulationSize; ++i)
 			{
-				Solution solution = CreateSolution(i) as Solution;
+				Solution solution = CreateProxySolution(i);
 				solution.Parameters = Parameters;
 				
 				solution.Reset();
 				
 				d_solutions.Add(solution);
-				Population.AddRange(solution.Generate(perturbationRate));
+				
+				solution.Generate(perturbationRate);
+				Population.AddRange(solution.Solutions);
 			}
 		}
 		
@@ -100,10 +112,6 @@ namespace Optimization.Optimizers.SPSA
 				double perturbationRate = PerturbationRate;
 
 				solution.Update(perturbationRate, LearningRate);
-				Optimization.Solution[] generated = solution.Generate(perturbationRate);
-				
-				Population[(int)solution.Id * 2] = generated[0];
-				Population[(int)solution.Id * 2 + 1] = generated[1];
 			}
 		}
 		
@@ -121,6 +129,36 @@ namespace Optimization.Optimizers.SPSA
 		{
 			base.IncrementIteration();
 			d_rateContext["k"] = CurrentIteration;
+		}
+		
+		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer)
+		{
+			base.FromStorage(storage, optimizer);
+			
+			// Deduce proxies
+			d_solutions.Clear();
+			
+			for (int i = 0; i < Population.Count / 2; ++i)
+			{
+				Optimization.Solution first = Population[i * 2];
+				Optimization.Solution second = Population[i * 2 + 1];
+				
+				Solution sol = CreateProxySolution((uint)i);
+				sol.Parameters = Parameters;
+				
+				for (int p = 0; p < first.Parameters.Count; ++p)
+				{
+					Parameter p1 = first.Parameters[p];
+					Parameter p2 = first.Parameters[p];
+
+					sol.Parameters[p].Value = (p1.Value + p2.Value) / 2;
+				}
+				
+				sol.Solutions = new Optimization.Solution[] {first, second};
+				d_solutions.Add(sol);
+			}
+			
+			Setup();
 		}
 	}
 }

@@ -1,7 +1,7 @@
-Name: optimizers-sharp
-Description: optimizers-sharp
+Name: optimizers2-sharp
+Description: optimizers2-sharp
 Version: @VERSION@
-Libraries=@expanded_libdir@/liboptimization-sharp/optimizers/Optimization.Optimizers.dll
+Libraries=@expanded_libdir@/liboptimization2-sharp/optimizers/Optimization.Optimizers.dll
 
-Requires: optimization-sharp
-Libs: -r:@expanded_libdir@/liboptimization-sharp/optimizers/Optimization.Optimizers.dll
+Requires: optimization-sharp-2.0
+Libs: -r:@expanded_libdir@/liboptimization2-sharp/optimizers/Optimization.Optimizers.dll

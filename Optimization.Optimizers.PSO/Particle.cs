@@ -82,15 +82,20 @@ namespace Optimization.Optimizers.PSO
 		
 		private void UpdateVelocityData()
 		{
-			// Create string of velocity data to save in the database 'velocity' column
-			List<string> vel = new List<string>();
-			
-			foreach (double v in d_velocity)
+			for (int i = 0; i < d_velocity.Count; ++i)
 			{
-				vel.Add(v.ToString());
+				Data[String.Format("velocity_{0}", i)] = d_velocity[i].ToString();
 			}
+		}
+		
+		private void VelocityFromData()
+		{
+			d_velocity.Clear();
 
-			Data["velocity"] = String.Join(",", vel.ToArray());
+			for (int i = 0; i < Parameters.Count; ++i)
+			{
+				 d_velocity.Add(Double.Parse((string)Data[String.Format("velocity_{0}", i)]));
+			}
 		}
 		
 		public virtual void UpdateBest()
@@ -274,6 +279,13 @@ namespace Optimization.Optimizers.PSO
 			{
 				d_personalBest = value;
 			}
+		}
+		
+		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer, Storage.Records.Solution solution)
+		{
+			base.FromStorage(storage, optimizer, solution);
+
+			VelocityFromData();
 		}
 	}
 }

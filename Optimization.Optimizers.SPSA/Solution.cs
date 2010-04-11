@@ -42,7 +42,19 @@ namespace Optimization.Optimizers.SPSA
 			return 2 * System.Math.Round(State.Random.NextDouble()) - 1;
 		}
 		
-		public Optimization.Solution[] Generate(double perturbationRate)
+		public Optimization.Solution[] Solutions
+		{
+			get
+			{
+				return d_solutions;
+			}
+			set
+			{
+				d_solutions = value;
+			}
+		}
+		
+		public void Generate(double perturbationRate)
 		{
 			d_solutions[0].Parameters = Parameters;
 			d_solutions[1].Parameters = Parameters;
@@ -60,8 +72,6 @@ namespace Optimization.Optimizers.SPSA
 				d_solutions[0].Parameters[i].Value = thetaPlus;
 				d_solutions[1].Parameters[i].Value = thetaMin;
 			}
-			
-			return d_solutions;
 		}
 		
 		public void Update(double perturbationRate, double learningRate)
@@ -73,6 +83,8 @@ namespace Optimization.Optimizers.SPSA
 			{
 				Parameters[i].Value -= learningRate * constant * d_deltas[i];
 			}
+			
+			Generate(perturbationRate);
 		}
 	}
 }

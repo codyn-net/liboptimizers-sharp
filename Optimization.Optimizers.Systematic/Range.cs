@@ -27,16 +27,19 @@ namespace Optimization.Optimizers.Systematic
 	public class Range : IEnumerable<double>
 	{
 		private string d_name;
-		private double d_min;
-		private double d_step;
-		private double d_max;
+
+		private Boundary d_boundary;
+
+		private NumericSetting d_step;
+		private NumericSetting d_steps;
 		
-		public Range(string name, double min, double step, double max)
+		public Range(string name, Boundary boundary)
 		{
 			d_name = name;
-			d_min = min;
-			d_step = step;
-			d_max = max;
+			d_boundary = boundary;
+			
+			d_step = new NumericSetting();
+			d_step.Value = (boundary.Max - boundary.Min) / 10;
 		}
 		
 		public string Name
@@ -47,38 +50,46 @@ namespace Optimization.Optimizers.Systematic
 			}
 		}
 		
-		public double Min
+		public Boundary Boundary
 		{
 			get
 			{
-				return d_min;
+				return d_boundary;
 			}
 		}
 		
-		public double Max
-		{
-			get
-			{
-				return d_max;
-			}
-		}
-		
-		public double Step
+		public NumericSetting Step
 		{
 			get
 			{
 				return d_step;
 			}
+			set
+			{
+				d_step = value;
+			}
+		}
+		
+		public NumericSetting Steps
+		{
+			get
+			{
+				return d_steps;
+			}
+			set
+			{
+				d_steps = value;
+			}
 		}
 		
 		public IEnumerator<double> GetEnumerator()
 		{
-			double i = d_min;
+			double i = Boundary.Min;
 			
-			while ((d_min < d_max && i - 0.5 * d_step <= d_max) || (d_min > d_max && i - 0.5 * d_step >= d_max))
+			while ((Boundary.Min < Boundary.Max && i - 0.5 * d_step.Value <= Boundary.Max) || (Boundary.Min > Boundary.Max && i - 0.5 * d_step.Value >= Boundary.Max))
 			{
 				yield return i;
-				i += d_step;
+				i += d_step.Value;
 			}
 		}
 		
