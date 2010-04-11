@@ -77,12 +77,17 @@ DLL_REFERENCES =
 
 CLEANFILES = $(PROGRAMFILES) $(LINUX_PKGCONFIG) 
 
+OPTIMIZERS_SHARP_PC = $(BUILD_DIR)/optimizers-sharp-@LIBOPTIMIZERS_SHARP_API_VERSION@.pc
+OPTIMIZERS_SHARP_API_PC = optimizers-sharp-@LIBOPTIMIZERS_SHARP_API_VERSION@.pc
+
+pc_files = $(OPTIMIZERS_SHARP_API_PC)
+
 include $(top_srcdir)/Makefile.include
 
-OPTIMIZERS_SHARP_PC = $(BUILD_DIR)/optimizers-sharp.pc
+$(eval $(call emit-deploy-wrapper,OPTIMIZERS_SHARP_PC,$(OPTIMIZERS_SHARP_API_PC)))
 
-$(eval $(call emit-deploy-wrapper,OPTIMIZERS_SHARP_PC,optimizers-sharp.pc))
-
+$(OPTIMIZERS_SHARP_API_PC): optimizers-sharp.pc
+	cp $< $@
 
 $(eval $(call emit_resgen_targets))
 $(build_xamlg_list): %.xaml.g.cs: %.xaml
