@@ -74,14 +74,20 @@ namespace Optimization.Optimizers.SPSA
 			}
 		}
 		
-		public void Update(double perturbationRate, double learningRate)
+		public void Update(double perturbationRate, double learningRate, double epsilon)
 		{
 			// Note: we do gradient _ascend_ not descend in this framework
 			double constant = (d_solutions[1].Fitness.Value - d_solutions[0].Fitness.Value) / (2 * perturbationRate);
 			
 			for (int i = 0; i < Parameters.Count; ++i)
 			{
-				Parameters[i].Value -= learningRate * constant * d_deltas[i];
+				Boundary boundary = Parameters[i].Boundary;
+				double maxStep = epsilon * (boundary.Max - boundary.Min);
+
+				double dtheta = learningRate * constant * d_deltas[i];
+				double newValue = Parameters[i].Value - System.Math.Sign(dtheta) * System.Math.Min(System.Math.Abs(dtheta), maxStep);
+				
+				Parameters[i].Value = System.Math.Max(System.Math.Min(newValue, boundary.Max), boundary.Min);
 			}
 			
 			Generate(perturbationRate);

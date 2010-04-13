@@ -20,15 +20,19 @@
 
 using System;
 using Optimization;
+using Optimization.Attributes;
 
 namespace Optimization.Optimizers.SPSA
 {
 	public class Settings : Optimization.Optimizer.Settings
 	{
-		[Attributes.Setting("learning-rate", "0.01", Description="Learning rate (ak), expression")]
+		[Setting("learning-rate", "0.01", Description="Learning rate (ak), expression")]
 		public string LearningRate;
 		
-		[Attributes.Setting("perturbation-rate", "0.01", Description="Perturbation rate (ck), expression")]
+		[Setting("perturbation-rate", "0.01", Description="Perturbation rate (ck), expression")]
 		public string PerturbationRate;
+		
+		[Setting("epsilon", "0.05", Description="Normalized maximum parameter step size, expression")]
+		public string Epsilon;
 	}
 }
