@@ -65,6 +65,8 @@ namespace Optimization.Optimizers.SPSA
 
 		public override void Initialize()
 		{
+			Setup();
+
 			base.Initialize();
 		}
 		
