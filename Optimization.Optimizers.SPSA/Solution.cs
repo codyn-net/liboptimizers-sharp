@@ -63,20 +63,18 @@ namespace Optimization.Optimizers.SPSA
 			
 			for (int i = 0; i < Parameters.Count; ++i)
 			{
-				Parameter parameter = Parameters[i];
 				d_deltas[i] = GenerateDelta();
 				
-				double thetaPlus = parameter.Value + d_deltas[i] * perturbationRate;
-				double thetaMin = parameter.Value - d_deltas[i] * perturbationRate;
-				
-				d_solutions[0].Parameters[i].Value = thetaPlus;
-				d_solutions[1].Parameters[i].Value = thetaMin;
+				double theta = d_deltas[i] * perturbationRate;
+
+				d_solutions[0].Parameters[i].Value += theta;
+				d_solutions[1].Parameters[i].Value -= theta;
 			}
 		}
 		
 		public void Update(double perturbationRate, double learningRate, double epsilon)
 		{
-			// Note: we do gradient _ascend_ not descend in this framework
+			// Note: we do gradient _ascend_ and not descend in this framework
 			double constant = (d_solutions[1].Fitness.Value - d_solutions[0].Fitness.Value) / (2 * perturbationRate);
 			
 			for (int i = 0; i < Parameters.Count; ++i)
