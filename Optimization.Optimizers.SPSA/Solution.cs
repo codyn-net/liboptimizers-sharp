@@ -54,6 +54,14 @@ namespace Optimization.Optimizers.SPSA
 			}
 		}
 		
+		public Optimization.Optimizers.SPSA.Settings.BoundaryConditionType BoundaryCondition
+		{
+			get
+			{
+				return ((Optimization.Optimizers.SPSA.Settings)State.Settings).BoundaryCondition;
+			}
+		}
+		
 		public void Generate(double perturbationRate)
 		{
 			d_solutions[0].Parameters = Parameters;
@@ -69,6 +77,14 @@ namespace Optimization.Optimizers.SPSA
 
 				d_solutions[0].Parameters[i].Value += theta;
 				d_solutions[1].Parameters[i].Value -= theta;
+				
+				if (BoundaryCondition == Optimization.Optimizers.SPSA.Settings.BoundaryConditionType.StickAll)
+				{
+					Boundary boundary = Parameters[i].Boundary;
+
+					d_solutions[0].Parameters[i].Value = System.Math.Max(System.Math.Min(d_solutions[0].Parameters[i].Value, boundary.Max), boundary.Min);
+					d_solutions[1].Parameters[i].Value = System.Math.Max(System.Math.Min(d_solutions[1].Parameters[i].Value, boundary.Max), boundary.Min);
+				}
 			}
 		}
 		
@@ -85,7 +101,11 @@ namespace Optimization.Optimizers.SPSA
 				double dtheta = learningRate * constant * d_deltas[i];
 				double newValue = Parameters[i].Value - System.Math.Sign(dtheta) * System.Math.Min(System.Math.Abs(dtheta), maxStep);
 				
-				Parameters[i].Value = System.Math.Max(System.Math.Min(newValue, boundary.Max), boundary.Min);
+				if (BoundaryCondition == Optimization.Optimizers.SPSA.Settings.BoundaryConditionType.StickAll ||
+				    BoundaryCondition == Optimization.Optimizers.SPSA.Settings.BoundaryConditionType.StickResult)
+				{
+					Parameters[i].Value = System.Math.Max(System.Math.Min(newValue, boundary.Max), boundary.Min);
+				}
 			}
 			
 			Generate(perturbationRate);

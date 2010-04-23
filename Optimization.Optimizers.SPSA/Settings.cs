@@ -26,6 +26,13 @@ namespace Optimization.Optimizers.SPSA
 {
 	public class Settings : Optimization.Optimizer.Settings
 	{
+		public enum BoundaryConditionType
+		{
+			None,
+			StickResult,
+			StickAll
+		}
+
 		[Setting("learning-rate", "0.01", Description="Learning rate (ak), expression")]
 		public string LearningRate;
 		
@@ -34,5 +41,8 @@ namespace Optimization.Optimizers.SPSA
 		
 		[Setting("epsilon", "0.05", Description="Normalized maximum parameter step size, expression")]
 		public string Epsilon;
+		
+		[Setting("boundary-condition", BoundaryConditionType.StickResult, Description="Boundary condition")]
+		public BoundaryConditionType BoundaryCondition;
 	}
 }
