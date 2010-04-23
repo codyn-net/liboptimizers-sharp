@@ -29,6 +29,8 @@ namespace Optimization.Optimizers.SPSA
 	{
 		Optimization.Math.Expression d_learningRate;
 		Optimization.Math.Expression d_perturbationRate;
+		Optimization.Math.Expression d_epsilon;
+
 		List<Optimizers.SPSA.Solution> d_solutions;
 		Dictionary<string, object> d_rateContext;
 		
@@ -36,6 +38,7 @@ namespace Optimization.Optimizers.SPSA
 		{
 			d_learningRate = new Optimization.Math.Expression();
 			d_perturbationRate = new Optimization.Math.Expression();
+			d_epsilon = new Optimization.Math.Expression();
 			
 			d_solutions = new List<Optimizers.SPSA.Solution>();
 			d_rateContext = new Dictionary<string, object>();
@@ -55,12 +58,15 @@ namespace Optimization.Optimizers.SPSA
 		{
 			d_learningRate.Parse(Configuration.LearningRate);
 			d_perturbationRate.Parse(Configuration.PerturbationRate);
+			d_epsilon.Parse(Configuration.Epsilon);
 			
 			d_rateContext["k"] = CurrentIteration;
 		}
 
 		public override void Initialize()
 		{
+			Setup();
+
 			base.Initialize();
 		}
 		
@@ -77,6 +83,14 @@ namespace Optimization.Optimizers.SPSA
 			get
 			{
 				return d_learningRate.Evaluate(d_rateContext);
+			}
+		}
+		
+		private double Epsilon
+		{
+			get
+			{
+				return d_epsilon.Evaluate(d_rateContext);
 			}
 		}
 		
@@ -109,9 +123,7 @@ namespace Optimization.Optimizers.SPSA
 		{
 			foreach (Solution solution in d_solutions)
 			{
-				double perturbationRate = PerturbationRate;
-
-				solution.Update(perturbationRate, LearningRate);
+				solution.Update(PerturbationRate, LearningRate, Epsilon);
 			}
 		}
 		

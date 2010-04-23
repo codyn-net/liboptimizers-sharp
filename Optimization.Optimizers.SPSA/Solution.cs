@@ -54,6 +54,14 @@ namespace Optimization.Optimizers.SPSA
 			}
 		}
 		
+		public Optimization.Optimizers.SPSA.Settings.BoundaryConditionType BoundaryCondition
+		{
+			get
+			{
+				return ((Optimization.Optimizers.SPSA.Settings)State.Settings).BoundaryCondition;
+			}
+		}
+		
 		public void Generate(double perturbationRate)
 		{
 			d_solutions[0].Parameters = Parameters;
@@ -63,25 +71,41 @@ namespace Optimization.Optimizers.SPSA
 			
 			for (int i = 0; i < Parameters.Count; ++i)
 			{
-				Parameter parameter = Parameters[i];
 				d_deltas[i] = GenerateDelta();
 				
-				double thetaPlus = parameter.Value + d_deltas[i] * perturbationRate;
-				double thetaMin = parameter.Value - d_deltas[i] * perturbationRate;
+				double theta = d_deltas[i] * perturbationRate;
+
+				d_solutions[0].Parameters[i].Value += theta;
+				d_solutions[1].Parameters[i].Value -= theta;
 				
-				d_solutions[0].Parameters[i].Value = thetaPlus;
-				d_solutions[1].Parameters[i].Value = thetaMin;
+				if (BoundaryCondition == Optimization.Optimizers.SPSA.Settings.BoundaryConditionType.StickAll)
+				{
+					Boundary boundary = Parameters[i].Boundary;
+
+					d_solutions[0].Parameters[i].Value = System.Math.Max(System.Math.Min(d_solutions[0].Parameters[i].Value, boundary.Max), boundary.Min);
+					d_solutions[1].Parameters[i].Value = System.Math.Max(System.Math.Min(d_solutions[1].Parameters[i].Value, boundary.Max), boundary.Min);
+				}
 			}
 		}
 		
-		public void Update(double perturbationRate, double learningRate)
+		public void Update(double perturbationRate, double learningRate, double epsilon)
 		{
-			// Note: we do gradient _ascend_ not descend in this framework
+			// Note: we do gradient _ascend_ and not descend in this framework
 			double constant = (d_solutions[1].Fitness.Value - d_solutions[0].Fitness.Value) / (2 * perturbationRate);
 			
 			for (int i = 0; i < Parameters.Count; ++i)
 			{
-				Parameters[i].Value -= learningRate * constant * d_deltas[i];
+				Boundary boundary = Parameters[i].Boundary;
+				double maxStep = epsilon * (boundary.Max - boundary.Min);
+
+				double dtheta = learningRate * constant * d_deltas[i];
+				double newValue = Parameters[i].Value - System.Math.Sign(dtheta) * System.Math.Min(System.Math.Abs(dtheta), maxStep);
+				
+				if (BoundaryCondition == Optimization.Optimizers.SPSA.Settings.BoundaryConditionType.StickAll ||
+				    BoundaryCondition == Optimization.Optimizers.SPSA.Settings.BoundaryConditionType.StickResult)
+				{
+					Parameters[i].Value = System.Math.Max(System.Math.Min(newValue, boundary.Max), boundary.Min);
+				}
 			}
 			
 			Generate(perturbationRate);
