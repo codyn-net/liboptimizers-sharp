@@ -222,7 +222,12 @@ namespace Optimization.Optimizers.GA
 		{
 			// Select individuals from which to make a new population
 			List<Solution> selection = Select();
-			
+
+			if (selection.Count == 0)
+			{
+				selection = new List<Solution>(Population);
+			}
+						
 			// Reproduce using the selection
 			List<Solution> population = Reproduce(selection);
 			
