@@ -23,10 +23,8 @@ namespace Optimization.Optimizers.GA
 			}
 		}
 		
-		public override void Initialize ()
+		private void SetupExpressions()
 		{
-			base.Initialize();
-			
 			d_context = new Dictionary<string, object>();
 			d_context["k"] = 0;
 			
@@ -44,6 +42,13 @@ namespace Optimization.Optimizers.GA
 			
 			d_mutationRate = new Optimization.Math.Expression();
 			d_mutationRate.Parse(Configuration.MutationRate);
+		}
+		
+		public override void Initialize ()
+		{
+			base.Initialize();
+			
+			SetupExpressions();
 		}
 		
 		protected override Settings CreateSettings()
@@ -228,6 +233,13 @@ namespace Optimization.Optimizers.GA
 			
 			Population.Clear();
 			Population.AddRange(population);
+		}
+		
+		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer)
+		{
+			base.FromStorage(storage, optimizer);
+			
+			SetupExpressions();
 		}
 	}
 }

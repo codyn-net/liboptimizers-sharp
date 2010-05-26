@@ -148,5 +148,13 @@ namespace Optimization.Optimizers.ADPSO
 				}
 			}
 		}
+		
+		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer)
+		{
+			base.FromStorage(storage, optimizer);
+			
+			// This causes the factors to be recalculated next update
+			d_factors = null;
+		}
 	}
 }

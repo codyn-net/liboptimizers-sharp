@@ -66,5 +66,12 @@ namespace Optimization.Optimizers.ADPSO
 			++d_bounced;
 			Data["bounced"] = d_bounced;
 		}
+		
+		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer, Storage.Records.Solution solution)
+		{
+			base.FromStorage(storage, optimizer, solution);
+			
+			d_bounced = uint.Parse((string)Data["bounced"]);
+		}
 	}
 }

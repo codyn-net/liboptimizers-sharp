@@ -36,10 +36,10 @@ namespace Optimization.Optimizers.PSO
 		[Setting("max-velocity", -1.0, Description="Maximum particle velocity (in fraction of parameter space)")]
 		public double MaxVelocity;
 		
-		[Setting("coginitive-factor", 1.49455, Description="Cognitive factor constant")]
+		[Setting("coginitive-factor", 2.05, Description="Cognitive factor constant")]
 		public double CognitiveFactor;
 		
-		[Setting("social-factor", 1.49455, Description="Social factor constant")]
+		[Setting("social-factor", 2.05, Description="Social factor constant")]
 		public double SocialFactor;
 		
 		[Setting("constriction", 0.729, Description="Velocity update constriction")]
