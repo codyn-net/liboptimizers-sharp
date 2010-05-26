@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Xml;
+using System.Text;
 
 namespace Optimization.Optimizers.GA
 {
@@ -8,11 +10,27 @@ namespace Optimization.Optimizers.GA
 	{
 		private Optimization.Math.Expression d_tournamentSize;
 		private Optimization.Math.Expression d_tournamentProbability;
-		private Optimization.Math.Expression d_mutationProbability;
-		private Optimization.Math.Expression d_mutationRate;
 		private Optimization.Math.Expression d_crossoverProbability;
-		
+		private Optimization.Math.Expression d_globalMutationProbability;
+		private Optimization.Math.Expression d_globalMutationRate;
+
+		private List<Optimization.Math.Expression> d_mutationProbability;
+		private List<Optimization.Math.Expression> d_mutationRate;
+
 		private Dictionary<string, object> d_context;
+
+		private List<bool> d_parameterDiscrete;
+		 
+		public GA()
+		{
+			d_parameterDiscrete = new List<bool>();
+
+			d_mutationRate = new List<Optimization.Math.Expression>();
+			d_mutationProbability = new List<Optimization.Math.Expression>();
+
+			d_globalMutationProbability = new Optimization.Math.Expression();
+			d_globalMutationRate = new Optimization.Math.Expression();
+		}
 
 		// Override 'Configuration' property returning subclassed Settings
 		public new Optimization.Optimizers.GA.Settings Configuration
@@ -21,6 +39,11 @@ namespace Optimization.Optimizers.GA
 			{
 				return base.Configuration as Optimization.Optimizers.GA.Settings;
 			}
+		}
+		
+		protected override Solution CreateSolution (uint idx)
+		{
+			return new Individual(idx, Fitness, State);
 		}
 		
 		private void SetupExpressions()
@@ -34,14 +57,16 @@ namespace Optimization.Optimizers.GA
 			d_tournamentProbability = new Optimization.Math.Expression();
 			d_tournamentProbability.Parse(Configuration.TournamentProbability);
 			
-			d_mutationProbability = new Optimization.Math.Expression();
-			d_mutationProbability.Parse(Configuration.MutationProbability);
-			
 			d_crossoverProbability = new Optimization.Math.Expression();
 			d_crossoverProbability.Parse(Configuration.CrossoverProbability);
 			
-			d_mutationRate = new Optimization.Math.Expression();
-			d_mutationRate.Parse(Configuration.MutationRate);
+			d_globalMutationProbability.Parse(Configuration.MutationProbability);
+			d_globalMutationRate.Parse(Configuration.MutationRate);
+		}
+		
+		private string NormalizeName(string name)
+		{
+			return name.Replace("`", "").Replace("\"", "").Replace("'", "");
 		}
 		
 		public override void Initialize ()
@@ -49,6 +74,31 @@ namespace Optimization.Optimizers.GA
 			base.Initialize();
 			
 			SetupExpressions();
+
+			// Store some additional info in the database
+			Storage.Query("ALTER TABLE parameters ADD COLUMN mutation_probability TEXT");
+			Storage.Query("ALTER TABLE parameters ADD COLUMN mutation_rate TEXT");
+			Storage.Query("ALTER TABLE parameters ADD COLUMN discrete INTEGER");
+
+			for (int i = 0; i < Parameters.Count; ++i)
+			{
+				Storage.Query("UPDATE parameters SET mutation_probability = @0, mutation_rate = @1, discrete = @2 WHERE name = @3",
+				              d_mutationProbability[i].Text,
+				              d_mutationRate[i].Text,
+				              d_parameterDiscrete[i],
+				              Parameters[i].Name);
+			}
+
+			StringBuilder q = new StringBuilder();
+			q.Append("CREATE TABLE `reproduction_state` (`index` INTEGER, `iteration` INTEGER, `crossover` INTEGER");
+			
+			foreach (Parameter parameter in Parameters)
+			{
+				q.AppendFormat(", `{0}` INTEGER", NormalizeName(parameter.Name));
+			}
+			
+			q.Append(")");
+			Storage.Query(q.ToString());
 		}
 		
 		protected override Settings CreateSettings()
@@ -141,14 +191,15 @@ namespace Optimization.Optimizers.GA
 			}
 		}
 		
-		private Solution Crossover(Solution p1, Solution p2)
+		private Individual Crossover(Solution p1, Solution p2)
 		{
 			// Define crossover point in parameters
 			int num = System.Math.Min(p1.Parameters.Count, p2.Parameters.Count);
 			int cutPoint = (int)System.Math.Round(State.Random.Range(0, num - 2));
 			
-			Solution ret = new Solution(0, Fitness, State);
-			
+			Individual ret = (Individual)CreateSolution(0);
+			ret.LastCutPoint = cutPoint;
+
 			for (int i = 0; i < cutPoint + (p2.Parameters.Count - cutPoint); ++i)
 			{
 				Solution take = i <= cutPoint ? p1 : p2;
@@ -158,28 +209,48 @@ namespace Optimization.Optimizers.GA
 			return ret;
 		}
 		
-		private void Mutate(Parameter parameter, double mutationRate)
+		private void Mutate(Individual individual, int parameterIndex, double mutationRate, bool isDiscrete)
 		{
-			double part = mutationRate * (parameter.Boundary.Max - parameter.Boundary.Min);
+			Parameter parameter = individual.Parameters[parameterIndex];
 
-			// Mutate parameter		
-			parameter.Value += State.Random.Range(-part, part);
-			
-			// Keep within boundaries
-			if (parameter.Value > parameter.Boundary.Max)
+			if (isDiscrete)
 			{
-				parameter.Value = parameter.Boundary.Max;
+				double num = parameter.Boundary.Max - parameter.Boundary.Min;
+
+				if (num >= 1)
+				{
+					double val = System.Math.Round(State.Random.Range(0, num - 1)) + parameter.Boundary.Min;
+
+					parameter.Value = val + (val >= parameter.Value ? 1 : 0);
+					individual.Mutations[parameterIndex] = parameter.Value;
+				}
 			}
-			else if (parameter.Value < parameter.Boundary.Min)
+			else
 			{
-				parameter.Value = parameter.Boundary.Min;
+				double part = mutationRate * (parameter.Boundary.Max - parameter.Boundary.Min);
+				double oldvalue = parameter.Value;
+
+				// Mutate parameter		
+				parameter.Value += State.Random.Range(-part, part);
+			
+				// Keep within boundaries
+				if (parameter.Value > parameter.Boundary.Max)
+				{
+					parameter.Value = parameter.Boundary.Max;
+				}
+				else if (parameter.Value < parameter.Boundary.Min)
+				{
+					parameter.Value = parameter.Boundary.Min;
+				}
+				
+				individual.Mutations[parameterIndex] = parameter.Value - oldvalue;
 			}
 		}
 		
 		private List<Solution> Reproduce(List<Solution> parents)
 		{
-			double mutationProbability = d_mutationProbability.Evaluate(d_context);
 			double crossoverProbability = d_crossoverProbability.Evaluate(d_context);
+
 			List<Solution> population = new List<Solution>();
 			
 			for (int i = 0; i < Configuration.PopulationSize; ++i)
@@ -188,7 +259,7 @@ namespace Optimization.Optimizers.GA
 				Solution p1 = parents[(int)System.Math.Round(State.Random.Range(0, parents.Count - 1))];
 				Solution p2 = parents[(int)System.Math.Round(State.Random.Range(0, parents.Count - 1))];
 				
-				Solution child;
+				Individual child;
 				
 				// Make child from crossover or from a single parent
 				if (State.Random.NextDouble() <= crossoverProbability)
@@ -197,18 +268,28 @@ namespace Optimization.Optimizers.GA
 				}
 				else
 				{
-					child = (State.Random.NextDouble() < 0.5 ? p1.Clone() : p2.Clone()) as Solution;
+					child = (State.Random.NextDouble() < 0.5 ? p1.Clone() : p2.Clone()) as Individual;
 				}
 				
 				child.Id = (uint)i;
-				double mutationRate = d_mutationRate.Evaluate(d_context);
+				child.ResetMutations();
 				
 				// Apply mutation if necessary
-				foreach (Parameter parameter in child.Parameters)
+				for (int p = 0; p < child.Parameters.Count; ++p)
 				{
+					double mutationProbability = d_mutationProbability[p].Evaluate(d_context);
+					
+					if (d_parameterDiscrete[i])
+					{
+						child.Mutations[i] = -1;
+					}
+
 					if (State.Random.NextDouble() <= mutationProbability)
 					{
-						Mutate(parameter, mutationRate);
+						bool isDiscrete = d_parameterDiscrete[p];
+						double mutationRate = d_mutationRate[p].Evaluate(d_context);
+
+						Mutate(child, i, mutationRate, isDiscrete);
 					}
 				}
 				
@@ -240,6 +321,132 @@ namespace Optimization.Optimizers.GA
 			base.FromStorage(storage, optimizer);
 			
 			SetupExpressions();
+
+			d_mutationRate.Clear();
+			d_mutationProbability.Clear();
+			d_parameterDiscrete.Clear();
+
+			for (int i = 0; i < Parameters.Count; ++i)
+			{
+				object[] ret = Storage.QueryFirst("SELECT mutation_probability, mutation_rate, discrete FROM parameters WHERE name = @0", Parameters[i].Name);
+
+				Optimization.Math.Expression mutationProbability;
+				Optimization.Math.Expression mutationRate;
+				bool discrete;
+
+				if (ret == null)
+				{
+					mutationProbability = d_globalMutationProbability;
+					mutationRate = d_globalMutationRate;
+					discrete = Configuration.Discrete;
+				}
+				else
+				{
+					mutationProbability = new Optimization.Math.Expression();
+					mutationProbability.Parse(ret[0].ToString());
+
+					mutationRate = new Optimization.Math.Expression();
+					mutationRate.Parse(ret[1].ToString());
+					
+					discrete = bool.Parse(ret[2].ToString());
+				}
+
+				d_mutationProbability.Add(mutationProbability);
+				d_mutationRate.Add(mutationRate);
+				d_parameterDiscrete.Add(discrete);
+			}
+		}
+		
+		public override void FromXml(System.Xml.XmlNode root)
+		{
+			base.FromXml(root);
+
+			d_mutationProbability.Clear();
+			d_mutationRate.Clear();
+			
+			XmlNodeList nodes = root.SelectNodes("parameters/parameter");
+			
+			foreach (XmlNode node in nodes)
+			{
+				XmlAttribute mutationProbability = node.Attributes["mutation-probability"];
+				XmlAttribute mutationRate = node.Attributes["mutation-rate"];
+				XmlAttribute isDiscrete = node.Attributes["discrete"];
+				
+				XmlAttribute name = node.Attributes["name"];
+
+				if (name == null)
+				{
+					continue;
+				}
+				
+				Optimization.Parameter parameter = Parameter(name.Value);
+				
+				if (parameter == null)
+				{
+					continue;
+				}
+
+				Optimization.Math.Expression expression;
+
+				// Parse per parameter mutation probability
+				if (mutationProbability == null)
+				{
+					expression = d_globalMutationProbability;
+				}
+				else
+				{
+					expression = new Optimization.Math.Expression();
+
+					if (!expression.Parse(mutationProbability.Value))
+					{
+						Console.Error.WriteLine("[Error] Could not parse mutation probability for the parameter ({0}): {1}", name.Value, expression.ErrorMessage);
+						expression = d_globalMutationProbability;
+					}
+				}
+
+				d_mutationProbability.Add(expression);	
+				
+				// Parse per parameter mutation rate
+				if (mutationRate == null)
+				{
+					expression = d_globalMutationRate;
+				}
+				else
+				{
+					expression = new Optimization.Math.Expression();
+
+					if (!expression.Parse(mutationRate.Value))
+					{
+						Console.Error.WriteLine("[Error] Could not parse mutation rate for the parameter ({0}): {1}", name.Value, expression.ErrorMessage);
+						expression = d_globalMutationRate;
+					}
+				}
+
+				d_mutationRate.Add(expression);
+
+				bool discrete = (isDiscrete == null ? Configuration.Discrete : bool.Parse(isDiscrete.Value));
+				
+				if (!discrete)
+				{
+					d_parameterDiscrete.Add(false);
+				}
+				else
+				{
+					if (parameter.Boundary.Min % 1 != 0)
+					{
+						Console.Error.WriteLine("[Error] Minimum boundary value for discrete parameter ({0}) is not discrete: {1}", name.Value, parameter.Boundary.Min);
+						parameter.Boundary.Min = System.Math.Floor(parameter.Boundary.Min);
+					}
+
+					if (parameter.Boundary.Max % 1 != 0)
+					{
+						Console.Error.WriteLine("[Error] Maximum boundary value for discrete parameter ({0}) is not discrete: {1}", name.Value, parameter.Boundary.Max);
+						parameter.Boundary.Max = System.Math.Floor(parameter.Boundary.Max);
+					}
+					
+					d_parameterDiscrete.Add(true);
+				}
+			}
 		}
 	}
 }

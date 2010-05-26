@@ -49,5 +49,8 @@ namespace Optimization.Optimizers.GA
 		
 		[Optimization.Attributes.Setting("crossover-probability", "0.1", Description="Probability of cross-over. You can use the variable 'k' indicating the current iteration.")]
 		public string CrossoverProbability;
+
+		[Optimization.Attributes.Setting("discrete", "false", Description="Whether all parameters should be considered discrete by default.")]
+		public bool Discrete;
 	}
 }

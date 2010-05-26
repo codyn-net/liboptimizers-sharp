@@ -49,6 +49,7 @@ FILES = \
 	Optimization.Optimizers.ADPSO/Particle.cs \
 	Optimization.Optimizers.ADPSO/Settings.cs \
 	Optimization.Optimizers.GA/GA.cs \
+	Optimization.Optimizers.GA/Individual.cs \
 	Optimization.Optimizers.GA/Settings.cs \
 	Optimization.Optimizers.PSO/Particle.cs \
 	Optimization.Optimizers.PSO/PSO.cs \
