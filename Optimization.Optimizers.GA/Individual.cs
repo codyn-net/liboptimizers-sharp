@@ -13,19 +13,11 @@ namespace Optimization.Optimizers.GA
 		{
 		}
 
-		public override void Add(Parameter parameter)
+		public override void Reset()
 		{
-			base.Add(parameter);
+			base.Reset();
 
-			if (d_mutations == null || Parameters.Count != d_mutations.Count)
-			{
-				d_mutations = new List<double>(Parameters.Count);
-
-				for (int i = 0; i < Parameters.Count; ++i)
-				{
-					d_mutations.Add(0);
-				}
-			}
+			ResetMutations();
 		}
 
 		public override void Copy(Optimization.Solution other)
@@ -37,12 +29,14 @@ namespace Optimization.Optimizers.GA
 			d_lastCutPoint = individual.LastCutPoint;
 			d_mutations = new List<double>(individual.Mutations);
 		}
-		
+
 		public void ResetMutations()
 		{
-			for (int i = 0; i < d_mutations.Count; ++i)
+			d_mutations = new List<double>();
+
+			for (int i = 0; i < Parameters.Count; ++i)
 			{
-				d_mutations[i] = 0;
+				d_mutations.Add(0);
 			}
 		}
 		

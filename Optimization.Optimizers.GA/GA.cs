@@ -69,7 +69,7 @@ namespace Optimization.Optimizers.GA
 			return name.Replace("`", "").Replace("\"", "").Replace("'", "");
 		}
 		
-		public override void Initialize ()
+		public override void Initialize()
 		{
 			base.Initialize();
 			
@@ -106,8 +106,43 @@ namespace Optimization.Optimizers.GA
 			return new Optimization.Optimizers.GA.Settings();
 		}
 		
-		protected override void IncrementIteration ()
+		private void SaveReproductionState()
 		{
+			object[] values = new object[Parameters.Count + 3];
+
+			values[0] = CurrentIteration;
+
+			foreach (Solution solution in Population)
+			{
+				Individual individual = (Individual)solution;
+
+				// Save current population mutation and crossover state
+				StringBuilder q = new StringBuilder();
+				StringBuilder vals = new StringBuilder();
+				
+				values[1] = individual.Id;
+				values[2] = individual.LastCutPoint;
+
+				q.Append("INSERT INTO `reproduction_state` (`iteration`, `index`, `crossover`");
+				vals.Append("VALUES(@0, @1, @2");
+				
+				for (int i = 0; i < individual.Parameters.Count; ++i)
+				{
+					q.AppendFormat(", `{0}`", NormalizeName(individual.Parameters[i].Name));
+					vals.AppendFormat(", @{0}", i + 3);
+
+					values[i] = individual.Mutations[i];
+				}
+				
+				string query = String.Format("{0}) {1})", q, vals);
+				Storage.Query(query, values);
+			}
+		}
+		
+		protected override void IncrementIteration()
+		{
+			SaveReproductionState();
+
 			base.IncrementIteration();
 			
 			d_context["k"] = CurrentIteration;
@@ -206,6 +241,7 @@ namespace Optimization.Optimizers.GA
 				ret.Add(take.Parameters[i].Clone() as Parameter);
 			}
 			
+			ret.ResetMutations();
 			return ret;
 		}
 		
@@ -220,9 +256,10 @@ namespace Optimization.Optimizers.GA
 				if (num >= 1)
 				{
 					double val = System.Math.Round(State.Random.Range(0, num - 1)) + parameter.Boundary.Min;
+					double oldvalue = parameter.Value;
 
 					parameter.Value = val + (val >= parameter.Value ? 1 : 0);
-					individual.Mutations[parameterIndex] = parameter.Value;
+					individual.Mutations[parameterIndex] = parameter.Value - oldvalue;
 				}
 			}
 			else
@@ -278,18 +315,13 @@ namespace Optimization.Optimizers.GA
 				for (int p = 0; p < child.Parameters.Count; ++p)
 				{
 					double mutationProbability = d_mutationProbability[p].Evaluate(d_context);
-					
-					if (d_parameterDiscrete[i])
-					{
-						child.Mutations[i] = -1;
-					}
 
 					if (State.Random.NextDouble() <= mutationProbability)
 					{
 						bool isDiscrete = d_parameterDiscrete[p];
 						double mutationRate = d_mutationRate[p].Evaluate(d_context);
 
-						Mutate(child, i, mutationRate, isDiscrete);
+						Mutate(child, p, mutationRate, isDiscrete);
 					}
 				}
 				
@@ -308,7 +340,7 @@ namespace Optimization.Optimizers.GA
 			{
 				selection = new List<Solution>(Population);
 			}
-						
+			
 			// Reproduce using the selection
 			List<Solution> population = Reproduce(selection);
 			
