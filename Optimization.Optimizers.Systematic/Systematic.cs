@@ -55,9 +55,11 @@ namespace Optimization.Optimizers.Systematic
 			{
 				Range range = d_ranges[i];
 
+				object ret = Storage.QueryValue("SELECT `id` FROM `parameters` WHERE `name` = @0", Parameters[i].Name);
+
 				Storage.Query(@"INSERT INTO `ranges` (`id`, `step`, `step_repr`, `steps`, `steps_repr`)
 				                VALUES (@0, @1, @2, @3, @4)",
-				              i + 1,
+				              ret,
 				              range.Step.Value,
 				              range.Step.Representation,
 				              range.Steps != null ? range.Steps.Value : -1,
@@ -204,10 +206,11 @@ namespace Optimization.Optimizers.Systematic
 			d_numberOfSolutions = 0;
 			
 			// Read ranges from the storage
-			storage.Query("SELECT `parameters`.`name`, `ranges`.`step_repr`, `ranges`.`steps_repr` LEFT JOIN `parameters` ON (`parameters`.`id` = `ranges`.`id`) FROM `ranges` ORDER BY `id`", delegate (IDataReader reader) {
+			storage.Query("SELECT `parameters`.`name`, `ranges`.`step_repr`, `ranges`.`steps_repr` FROM `ranges` LEFT JOIN `parameters` ON (`parameters`.`id` = `ranges`.`id`) ORDER BY `parameters`.`id`", delegate (IDataReader reader) {
+				Console.WriteLine("{0}, {1}, {2}", reader["name"], reader["step_repr"], reader["steps_repr"]);
 				string name = (string)reader["name"];
-				string step = (string)reader["step"];
-				string steps = (string)reader["steps"];
+				string step = (string)reader["step_repr"];
+				string steps = (string)reader["steps_repr"];
 				
 				Parameter parameter = Parameter(name);
 				Range range = new Range(parameter.Name, parameter.Boundary);
@@ -236,10 +239,11 @@ namespace Optimization.Optimizers.Systematic
 			});
 			
 			object val = Storage.QueryValue("SELECT MAX(`index`) FROM `solution`");
+			Console.WriteLine("VAl: {0}", (uint)(Int64)val);
 			
 			if (val != null)
 			{
-				d_currentId = (uint)val + 1;
+				d_currentId = (uint)((Int64)val + 1);
 			}
 			else
 			{
