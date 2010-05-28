@@ -207,7 +207,6 @@ namespace Optimization.Optimizers.Systematic
 			
 			// Read ranges from the storage
 			storage.Query("SELECT `parameters`.`name`, `ranges`.`step_repr`, `ranges`.`steps_repr` FROM `ranges` LEFT JOIN `parameters` ON (`parameters`.`id` = `ranges`.`id`) ORDER BY `parameters`.`id`", delegate (IDataReader reader) {
-				Console.WriteLine("{0}, {1}, {2}", reader["name"], reader["step_repr"], reader["steps_repr"]);
 				string name = (string)reader["name"];
 				string step = (string)reader["step_repr"];
 				string steps = (string)reader["steps_repr"];
@@ -239,7 +238,6 @@ namespace Optimization.Optimizers.Systematic
 			});
 			
 			object val = Storage.QueryValue("SELECT MAX(`index`) FROM `solution`");
-			Console.WriteLine("VAl: {0}", (uint)(Int64)val);
 			
 			if (val != null)
 			{
