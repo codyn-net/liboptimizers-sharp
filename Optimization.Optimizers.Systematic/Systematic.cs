@@ -163,8 +163,7 @@ namespace Optimization.Optimizers.Systematic
 				
 				if (range.Boundary.Max > range.Boundary.Min != range.Step.Value > 0)
 				{
-					Console.Error.WriteLine("Invalid range ({0})", name.Value);
-					continue;
+					throw new Exception(String.Format("XML: Invalid range specified {0}. Boundaries and steps result in 0 values.", name.Value));
 				}
 				
 				d_ranges.Add(range);
