@@ -86,9 +86,15 @@ namespace Optimization.Optimizers.Systematic
 		{
 			double i = Boundary.Min;
 			
-			while ((Boundary.Min < Boundary.Max && i - 0.5 * d_step.Value <= Boundary.Max) || (Boundary.Min > Boundary.Max && i - 0.5 * d_step.Value >= Boundary.Max))
+			while ((Boundary.Min < Boundary.Max && i - 0.5 * d_step.Value <= Boundary.Max) || (Boundary.Min > Boundary.Max && i - 0.5 * d_step.Value >= Boundary.Max) || d_step.Value == 0)
 			{
 				yield return i;
+
+				if (d_step.Value == 0)
+				{
+					break;
+				}
+
 				i += d_step.Value;
 			}
 		}

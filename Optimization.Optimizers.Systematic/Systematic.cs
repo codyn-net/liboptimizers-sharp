@@ -151,7 +151,14 @@ namespace Optimization.Optimizers.Systematic
 					range.Steps = new NumericSetting();
 					range.Steps.Representation = steps.Value;
 					
-					range.Step.Value = (range.Boundary.Max - range.Boundary.Min) / (range.Steps.Value - 1);
+					if (range.Steps.Value == 1)
+					{
+						range.Step.Value = 0;
+					}
+					else
+					{
+						range.Step.Value = (range.Boundary.Max - range.Boundary.Min) / (range.Steps.Value - 1);
+					}
 				}
 				
 				if (range.Boundary.Max > range.Boundary.Min != range.Step.Value > 0)
