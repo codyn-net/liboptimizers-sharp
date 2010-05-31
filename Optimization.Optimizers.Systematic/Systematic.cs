@@ -151,13 +151,19 @@ namespace Optimization.Optimizers.Systematic
 					range.Steps = new NumericSetting();
 					range.Steps.Representation = steps.Value;
 					
-					range.Step.Value = (range.Boundary.Max - range.Boundary.Min) / (range.Steps.Value - 1);
+					if (range.Steps.Value == 1)
+					{
+						range.Step.Value = 0;
+					}
+					else
+					{
+						range.Step.Value = (range.Boundary.Max - range.Boundary.Min) / (range.Steps.Value - 1);
+					}
 				}
 				
 				if (range.Boundary.Max > range.Boundary.Min != range.Step.Value > 0)
 				{
-					Console.Error.WriteLine("Invalid range ({0})", name.Value);
-					continue;
+					throw new Exception(String.Format("XML: Invalid range specified {0}. Boundaries and steps result in 0 values.", name.Value));
 				}
 				
 				d_ranges.Add(range);
