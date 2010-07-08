@@ -61,6 +61,7 @@
     <Compile Include="Optimization.Optimizers.PMPSO\Settings.cs" />
     <Compile Include="Optimization.Optimizers.PMPSO\State.cs" />
     <Compile Include="Optimization.Dispatcher.Internal.PMPSO\PMPSO.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.PSODD\PSODD.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -65,7 +65,8 @@ FILES = \
 	Optimization.Optimizers.Systematic/Settings.cs \
 	Optimization.Optimizers.SPSA/SPSA.cs \
 	Optimization.Optimizers.SPSA/Settings.cs \
-	Optimization.Optimizers.SPSA/Solution.cs
+	Optimization.Optimizers.SPSA/Solution.cs \
+	Optimization.Optimizers.Extensions.PSODD/PSODD.cs
 
 DATA_FILES = 
 
