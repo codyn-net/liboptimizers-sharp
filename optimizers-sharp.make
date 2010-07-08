@@ -50,6 +50,13 @@ FILES = \
 	Optimization.Optimizers.ADPSO/Settings.cs \
 	Optimization.Optimizers.GA/GA.cs \
 	Optimization.Optimizers.GA/Settings.cs \
+	Optimization.Optimizers.PMPSO/Fusion.cs \
+	Optimization.Optimizers.PMPSO/MutationSet.cs \
+	Optimization.Optimizers.PMPSO/Neighborhood.cs \
+	Optimization.Optimizers.PMPSO/Particle.cs \
+	Optimization.Optimizers.PMPSO/PMPSO.cs \
+	Optimization.Optimizers.PMPSO/Settings.cs \
+	Optimization.Optimizers.PMPSO/State.cs \
 	Optimization.Optimizers.PSO/Particle.cs \
 	Optimization.Optimizers.PSO/PSO.cs \
 	Optimization.Optimizers.PSO/Settings.cs \

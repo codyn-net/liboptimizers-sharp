@@ -53,6 +53,14 @@
     <Compile Include="Optimization.Optimizers.ADPSO\ADPSO.cs" />
     <Compile Include="Optimization.Optimizers.ADPSO\Settings.cs" />
     <Compile Include="Optimization.Optimizers.ADPSO\Particle.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\Fusion.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\MutationSet.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\Neighborhood.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\Particle.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\PMPSO.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\Settings.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\State.cs" />
+    <Compile Include="Optimization.Dispatcher.Internal.PMPSO\PMPSO.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
