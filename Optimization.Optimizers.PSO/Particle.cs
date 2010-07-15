@@ -30,7 +30,7 @@ namespace Optimization.Optimizers.PSO
 		List<double> d_velocity;
 		Particle d_personalBest;
 		
-		public Particle(uint id, Fitness fitness, State state) : base (id, fitness, state)
+		public Particle(uint id, Fitness fitness, Optimization.State state) : base (id, fitness, state)
 		{
 			d_velocity = new List<double>();
 			d_personalBest = null;
@@ -59,6 +59,14 @@ namespace Optimization.Optimizers.PSO
 			get
 			{
 				return State.Settings as PSONS.Settings;
+			}
+		}
+		
+		public new State State
+		{
+			get
+			{
+				return (State)base.State;
 			}
 		}
 		
@@ -180,38 +188,48 @@ namespace Optimization.Optimizers.PSO
 			}
 		}
 		
-		public virtual void Update(Particle gbest)
+		public virtual double CalculateVelocityUpdate(Particle gbest, int i)
+		{
+			PSONS.Settings settings = Configuration;
+			Parameter parameter = Parameters[i];
+			
+			double r1 = State.Random.Range(0, 1);
+			double r2 = State.Random.Range(0, 1);
+
+			double pg = 0;
+			double pl = 0;
+			double momentum = 0;
+			
+			// Global best difference
+			if (gbest != null && (State.VelocityUpdateComponents & State.VelocityUpdateType.DisableGlobal) == 0)
+			{
+				pg = gbest.Parameters[i].Value - parameter.Value;
+			}
+			
+			// Local best difference
+			if (d_personalBest != null && (int)(State.VelocityUpdateComponents & State.VelocityUpdateType.DisableLocal) == 0)
+			{
+				pl = d_personalBest.Parameters[i].Value - parameter.Value;
+			}
+			
+			if ((int)(State.VelocityUpdateComponents & State.VelocityUpdateType.DisableMomentum) == 0)
+			{
+				momentum = d_velocity[i];
+			}
+			
+			// PSO velocity update rule
+			return settings.Constriction * (momentum +
+			                                r1 * settings.CognitiveFactor * pl +
+			                                r2 * settings.SocialFactor * pg);
+		}
+		
+		public virtual void Update(double[] velocityUpdate)
 		{
 			// Main update function, applies the PSO update rule to update particle velocity
 			// and position.
-			PSONS.Settings settings = Configuration;
-
 			for (int i = 0; i < Parameters.Count; ++i)
 			{
-				Parameter parameter = Parameters[i];
-
-				double r1 = State.Random.Range(0, 1);
-				double r2 = State.Random.Range(0, 1);
-
-				double pg = 0;
-				double pl = 0;
-				
-				// Global best difference
-				if (gbest != null)
-				{
-					pg = gbest.Parameters[i].Value - parameter.Value;
-				}
-				
-				// Local best difference
-				if (d_personalBest != null)
-				{
-					pl = d_personalBest.Parameters[i].Value - parameter.Value;
-				}
-				
-				// PSO velocity update rule
-				d_velocity[i] = settings.Constriction * (d_velocity[i] + 
-				                                         r1 * settings.CognitiveFactor * pl +
-				                                         r2 * settings.SocialFactor * pg);
+				d_velocity[i] = velocityUpdate[i];
 
 				// Limit the maximum velocity according to the MaxVelocity setting
 				LimitVelocity(i);

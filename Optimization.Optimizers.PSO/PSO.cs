@@ -29,19 +29,39 @@ namespace Optimization.Optimizers.PSO
 	public class PSO : Optimizer
 	{
 		private bool d_loadingFromStorage;
+		private List<IPSOExtension> d_extensions;
 
 		// Override 'Configuration' property returning subclassed Settings
 		public new PSO.Settings Configuration
 		{
 			get
 			{
-				return base.Configuration as PSO.Settings;
+				return (PSO.Settings)base.Configuration;
 			}
+		}
+		
+		protected override Optimization.State CreateState()
+		{
+			return new State(Configuration);
 		}
 		
 		public PSO()
 		{
 			d_loadingFromStorage = false;
+			d_extensions = new List<IPSOExtension>();
+		}
+		
+		protected override void Setup()
+		{
+			base.Setup();
+			
+			foreach (Extension ext in Extensions)
+			{
+				if (ext is IPSOExtension)
+				{
+					d_extensions.Add((IPSOExtension)ext);
+				}
+			}
 		}
 		
 		protected override Settings CreateSettings()
@@ -66,10 +86,56 @@ namespace Optimization.Optimizers.PSO
 			base.UpdateBest();
 		}
 		
+		protected virtual Particle GetUpdateBest(Particle particle)
+		{
+			return (Particle)Best;
+		}
+		
+		public virtual double CalculateVelocityUpdate(Particle particle, Particle best, int i)
+		{
+			double ret = particle.CalculateVelocityUpdate(best, i);
+			
+			foreach (IPSOExtension ext in d_extensions)
+			{
+				ret += ext.CalculateVelocityUpdate(particle, best, i);
+			}
+			
+			return ret;
+		}
+		
+		public new State State
+		{
+			get
+			{
+				return (State)base.State;
+			}
+		}
+		
+		private void CalculateVelocityUpdateComponents(Particle particle)
+		{
+			State.VelocityUpdateComponents = State.VelocityUpdateType.Default;
+			
+			foreach (IPSOExtension ext in d_extensions)
+			{
+				State.VelocityUpdateComponents |= ext.VelocityUpdateComponents(particle);
+			}
+		}
+		
 		public override void Update(Solution solution)
 		{
+			Particle particle = (Particle)solution;
+			double[] velocityUpdate = new double[solution.Parameters.Count];
+			CalculateVelocityUpdateComponents(particle);
+
+			Particle best = GetUpdateBest(particle);
+			
+			for (int i = 0; i < velocityUpdate.Length; ++i)
+			{
+				velocityUpdate[i] = CalculateVelocityUpdate(particle, best, i);
+			}
+
 			// Update is implemented on the particle
-			((Particle)solution).Update((Particle)Best);
+			particle.Update(velocityUpdate);
 		}
 		
 		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer, Storage.Records.Solution solution, Optimization.Solution sol)
