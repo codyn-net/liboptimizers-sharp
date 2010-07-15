@@ -59,6 +59,8 @@ FILES = \
 	Optimization.Optimizers.PMPSO/State.cs \
 	Optimization.Optimizers.PSO/Particle.cs \
 	Optimization.Optimizers.PSO/PSO.cs \
+	Optimization.Optimizers.PSO/State.cs \
+	Optimization.Optimizers.PSO/IPSOExtension.cs \
 	Optimization.Optimizers.PSO/Settings.cs \
 	Optimization.Optimizers.Systematic/Range.cs \
 	Optimization.Optimizers.Systematic/Systematic.cs \
@@ -66,7 +68,9 @@ FILES = \
 	Optimization.Optimizers.SPSA/SPSA.cs \
 	Optimization.Optimizers.SPSA/Settings.cs \
 	Optimization.Optimizers.SPSA/Solution.cs \
-	Optimization.Optimizers.Extensions.PSODD/PSODD.cs
+	Optimization.Optimizers.SPSA/Algorithm.cs \
+	Optimization.Optimizers.Extensions.RegPSO/RegPSO.cs \
+	Optimization.Optimizers.Extensions.RegPSO/Settings.cs
 
 DATA_FILES = 
 
