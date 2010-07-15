@@ -279,16 +279,13 @@ namespace Optimization.Optimizers.PMPSO
 			}
 		}
 		
-		public override void Update(Solution solution)
+		protected override PSONS.Particle GetUpdateBest(PSONS.Particle particle)
 		{
-			Particle particle = (Particle)solution;
-			
 			// Get the subswarm best for this particle
 			Particle sbest = null;
-			d_subswarmBests.TryGetValue(particle.Hash, out sbest);
+			d_subswarmBests.TryGetValue(((Particle)particle).Hash, out sbest);
 			
-			// Update the particle with sbest as global best
-			particle.Update(sbest);
+			return sbest;
 		}
 		
 		public new State State

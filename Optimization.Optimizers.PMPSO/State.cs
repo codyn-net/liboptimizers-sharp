@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Optimization.Optimizers.PMPSO
 {
-	public class State : Optimization.State
+	public class State : PSO.State
 	{
 		private List<MutationSet> d_mutationSets;
 		private double d_mutationProbability;
