@@ -49,7 +49,7 @@ fi
 
 
 dnl package checks, common for all configs
-PKG_CHECK_MODULES([OPTIMIZATION_SHARP], [optimization-sharp-2.0 >= 2.7])
+PKG_CHECK_MODULES([OPTIMIZATION_SHARP], [optimization-sharp-2.0 >= 2.9])
 
 dnl package checks, per config
 
