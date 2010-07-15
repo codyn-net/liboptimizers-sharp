@@ -43,7 +43,7 @@ namespace Optimization.Optimizers.ADPSO
 			return new Optimization.Optimizers.ADPSO.Settings();
 		}
 		
-		protected override Solution CreateSolution(uint idx)
+		public override Solution CreateSolution(uint idx)
 		{
 			return new Particle(idx, Fitness, State);
 		}

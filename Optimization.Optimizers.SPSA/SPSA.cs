@@ -54,20 +54,15 @@ namespace Optimization.Optimizers.SPSA
 			}
 		}
 		
-		public virtual void Setup()
+		protected override void Setup()
 		{
+			base.Setup();
+
 			d_learningRate.Parse(Configuration.LearningRate);
 			d_perturbationRate.Parse(Configuration.PerturbationRate);
 			d_epsilon.Parse(Configuration.Epsilon);
 			
 			d_rateContext["k"] = CurrentIteration;
-		}
-
-		public override void Initialize()
-		{
-			Setup();
-
-			base.Initialize();
 		}
 		
 		private double PerturbationRate
@@ -132,7 +127,7 @@ namespace Optimization.Optimizers.SPSA
 			return new Optimizers.SPSA.Settings();
 		}
 		
-		protected override Optimization.Solution CreateSolution(uint idx)
+		public override Optimization.Solution CreateSolution(uint idx)
 		{
 			return new Optimizers.SPSA.Solution(idx, Fitness, State);
 		}
@@ -169,8 +164,6 @@ namespace Optimization.Optimizers.SPSA
 				sol.Solutions = new Optimization.Solution[] {first, second};
 				d_solutions.Add(sol);
 			}
-			
-			Setup();
 		}
 	}
 }

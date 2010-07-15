@@ -1,7 +1,7 @@
 dnl Warning: This is an automatically generated file, do not edit!
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.54])
-AC_INIT(liboptimizers2-sharp, 2.5)
+AC_INIT(liboptimizers2-sharp, 2.6)
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE
 
@@ -49,7 +49,7 @@ fi
 
 
 dnl package checks, common for all configs
-PKG_CHECK_MODULES([OPTIMIZATION_SHARP], [optimization-sharp-2.0 >= 2.7])
+PKG_CHECK_MODULES([OPTIMIZATION_SHARP], [optimization-sharp-2.0 >= 2.9])
 
 dnl package checks, per config
 

@@ -53,6 +53,19 @@
     <Compile Include="Optimization.Optimizers.ADPSO\ADPSO.cs" />
     <Compile Include="Optimization.Optimizers.ADPSO\Settings.cs" />
     <Compile Include="Optimization.Optimizers.ADPSO\Particle.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\Fusion.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\MutationSet.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\Neighborhood.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\Particle.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\PMPSO.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\Settings.cs" />
+    <Compile Include="Optimization.Optimizers.PMPSO\State.cs" />
+    <Compile Include="Optimization.Dispatcher.Internal.PMPSO\PMPSO.cs" />
+    <Compile Include="Optimization.Optimizers.PSO\IPSOExtension.cs" />
+    <Compile Include="Optimization.Optimizers.SPSA\Algorithm.cs" />
+    <Compile Include="Optimization.Optimizers.PSO\State.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.RegPSO\Settings.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.RegPSO\RegPSO.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -61,5 +74,6 @@
     <Folder Include="Optimization.Optimizers.Systematic\" />
     <Folder Include="Optimization.Optimizers.GA\" />
     <Folder Include="Optimization.Optimizers.ADPSO\" />
+    <Folder Include="Optimization.Optimizers.Extensions.RegPSO\" />
   </ItemGroup>
 </Project>

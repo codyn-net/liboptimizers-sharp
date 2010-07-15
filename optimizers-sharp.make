@@ -50,15 +50,27 @@ FILES = \
 	Optimization.Optimizers.ADPSO/Settings.cs \
 	Optimization.Optimizers.GA/GA.cs \
 	Optimization.Optimizers.GA/Settings.cs \
+	Optimization.Optimizers.PMPSO/Fusion.cs \
+	Optimization.Optimizers.PMPSO/MutationSet.cs \
+	Optimization.Optimizers.PMPSO/Neighborhood.cs \
+	Optimization.Optimizers.PMPSO/Particle.cs \
+	Optimization.Optimizers.PMPSO/PMPSO.cs \
+	Optimization.Optimizers.PMPSO/Settings.cs \
+	Optimization.Optimizers.PMPSO/State.cs \
 	Optimization.Optimizers.PSO/Particle.cs \
 	Optimization.Optimizers.PSO/PSO.cs \
+	Optimization.Optimizers.PSO/State.cs \
+	Optimization.Optimizers.PSO/IPSOExtension.cs \
 	Optimization.Optimizers.PSO/Settings.cs \
 	Optimization.Optimizers.Systematic/Range.cs \
 	Optimization.Optimizers.Systematic/Systematic.cs \
 	Optimization.Optimizers.Systematic/Settings.cs \
 	Optimization.Optimizers.SPSA/SPSA.cs \
 	Optimization.Optimizers.SPSA/Settings.cs \
-	Optimization.Optimizers.SPSA/Solution.cs
+	Optimization.Optimizers.SPSA/Solution.cs \
+	Optimization.Optimizers.SPSA/Algorithm.cs \
+	Optimization.Optimizers.Extensions.RegPSO/RegPSO.cs \
+	Optimization.Optimizers.Extensions.RegPSO/Settings.cs
 
 DATA_FILES = 
 
