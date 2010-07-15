@@ -50,7 +50,7 @@ namespace Optimization.Optimizers.PSO
 			return new Optimization.Optimizers.PSO.Settings();
 		}
 		
-		protected override Solution CreateSolution(uint idx)
+		public override Solution CreateSolution(uint idx)
 		{
 			// Create new particle
 			return new Particle(idx, Fitness, State);

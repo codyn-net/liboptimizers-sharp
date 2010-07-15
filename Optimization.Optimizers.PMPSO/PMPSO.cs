@@ -165,7 +165,7 @@ namespace Optimization.Optimizers.PMPSO
 			return new Optimization.Optimizers.PMPSO.Settings();
 		}
 		
-		protected override Solution CreateSolution(uint idx)
+		public override Solution CreateSolution(uint idx)
 		{
 			return new Particle(idx, Fitness, (Optimization.State)State);
 		}
