@@ -31,11 +31,16 @@ namespace Optimization.Optimizers.PMPSO
 		private List<Parameter> d_allParameters;
 		private List<uint> d_activeSet;
 		private uint d_hash;
+		private List<double> d_allVelocities;
+		private List<uint> d_activeIndices;
 
 		public Particle(uint id, Fitness fitness, Optimization.State state) : base(id, fitness, state)
 		{
 			d_personalBests = new Dictionary<uint, Particle>();
 			d_allParameters = new List<Parameter>();
+			d_allVelocities = new List<double>();
+			d_activeIndices = new List<uint>();
+
 			d_activeSet = new List<uint>();
 			d_hash = 0;
 		}
@@ -50,6 +55,8 @@ namespace Optimization.Optimizers.PMPSO
 			d_personalBests = new Dictionary<uint, Particle>(particle.d_personalBests);
 			
 			d_allParameters = new List<Parameter>(particle.d_allParameters);
+			d_allVelocities = new List<double>(particle.d_allVelocities);
+			
 			d_hash = particle.d_hash;
 		}
 		
@@ -93,17 +100,27 @@ namespace Optimization.Optimizers.PMPSO
 			
 			return diff.ToArray();
 		}
-		
+
 		public void UpdateParameterSet()
 		{
-			List<Parameter> all = new List<Parameter>(d_allParameters);
 			List<MutationSet> sets = MutationSets;
+			List<int> removeIndices = new List<int>();
+			
+			d_activeIndices.Clear();
 
 			for (int i = 0; i < d_activeSet.Count; ++i)
 			{
 				MutationSet s = sets[i];
 				uint activeIndex = d_activeSet[i];
 				uint[] activeIndices = s[(int)activeIndex];
+				
+				foreach (uint index in activeIndices)
+				{
+					if (!d_activeIndices.Contains(index))
+					{
+						d_activeIndices.Add(index);
+					}
+				}
 				
 				for (int j = 0; j < s.Count; ++j)
 				{
@@ -113,15 +130,25 @@ namespace Optimization.Optimizers.PMPSO
 					}
 
 					uint[] indices = Difference(s[j], activeIndices);
+
 					for (int k = 0; k < indices.Length; ++k)
 					{
-						all.Remove(d_allParameters[(int)indices[k]]);
+						removeIndices.Add((int)indices[k]);
 					}
 				}
 			}
 			
 			Parameters.Clear();
-			Parameters.AddRange(all);
+			Velocity.Clear();
+			
+			for (int i = 0; i < d_allParameters.Count; ++i)
+			{
+				if (!removeIndices.Contains(i))
+				{
+					Parameters.Add(d_allParameters[i]);
+					Velocity.Add(d_allVelocities[i]);
+				}
+			}
 			
 			RecalculateHash();
 			
@@ -199,6 +226,21 @@ namespace Optimization.Optimizers.PMPSO
 				d_personalBests.TryGetValue(d_hash, out ret);
 				return ret;
 			}
+		}
+		
+		private void TrackVelocity()
+		{
+			for (int i = 0; i < Velocity.Count; ++i)
+			{
+				d_allVelocities[(int)d_activeIndices[i]] = Velocity[i];
+				
+			}
+		}
+		
+		public override void Update(double[] velocityUpdate)
+		{
+			base.Update(velocityUpdate);
+			TrackVelocity();
 		}
 	}
 }
