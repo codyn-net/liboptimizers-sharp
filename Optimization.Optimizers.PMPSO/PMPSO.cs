@@ -170,6 +170,13 @@ namespace Optimization.Optimizers.PMPSO
 			return new Particle(idx, Fitness, (Optimization.State)State);
 		}
 		
+		protected override void SaveIteration()
+		{
+			base.SaveIteration();
+			
+			Storage.SaveActiveParameters();
+		}
+		
 		public override void Update()
 		{
 			Dictionary<string, object> vars = new Dictionary<string, object>();
