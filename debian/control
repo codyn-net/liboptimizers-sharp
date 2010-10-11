@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 7),
 			   cdbs,
 			   pkg-config,
 			   mono-devel | mono-gmcs,
-			   liboptimization2-sharp (>= 2.9)
+			   liboptimization2-sharp (>= 2.12)
 Standards-Version: 3.8.0
 Section: libs
 Homepage: http://birg.epfl.ch
