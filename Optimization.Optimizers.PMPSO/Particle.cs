@@ -82,7 +82,10 @@ namespace Optimization.Optimizers.PMPSO
 			
 			// Store all the original parameters
 			d_allParameters.Clear();
-			d_allParameters.AddRange(Parameters);			
+			d_allParameters.AddRange(Parameters);
+
+			d_allVelocities.Clear();
+			d_allVelocities.AddRange(Velocity);
 		}
 		
 		private uint[] Difference(uint[] s1, uint[] s2)
@@ -114,14 +117,6 @@ namespace Optimization.Optimizers.PMPSO
 				uint activeIndex = d_activeSet[i];
 				uint[] activeIndices = s[(int)activeIndex];
 				
-				foreach (uint index in activeIndices)
-				{
-					if (!d_activeIndices.Contains(index))
-					{
-						d_activeIndices.Add(index);
-					}
-				}
-				
 				for (int j = 0; j < s.Count; ++j)
 				{
 					if (j == activeIndex)
@@ -147,9 +142,11 @@ namespace Optimization.Optimizers.PMPSO
 				{
 					Parameters.Add(d_allParameters[i]);
 					Velocity.Add(d_allVelocities[i]);
+
+					d_activeIndices.Add((uint)i);
 				}
 			}
-			
+
 			RecalculateHash();
 			
 			// Update the standard PSO personal best from our cache of personal
