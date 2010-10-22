@@ -6,11 +6,11 @@ namespace Optimization.Optimizers.GA
 	[Optimization.Attributes.OptimizerAttribute(Description="Genetic Algorithm")]
 	public class GA : Optimization.Optimizer
 	{
-		private Optimization.Math.Expression d_tournamentSize;
-		private Optimization.Math.Expression d_tournamentProbability;
-		private Optimization.Math.Expression d_mutationProbability;
-		private Optimization.Math.Expression d_mutationRate;
-		private Optimization.Math.Expression d_crossoverProbability;
+		private Biorob.Math.Expression d_tournamentSize;
+		private Biorob.Math.Expression d_tournamentProbability;
+		private Biorob.Math.Expression d_mutationProbability;
+		private Biorob.Math.Expression d_mutationRate;
+		private Biorob.Math.Expression d_crossoverProbability;
 		
 		private Dictionary<string, object> d_context;
 
@@ -28,19 +28,19 @@ namespace Optimization.Optimizers.GA
 			d_context = new Dictionary<string, object>();
 			d_context["k"] = 0;
 			
-			d_tournamentSize = new Optimization.Math.Expression();
+			d_tournamentSize = new Biorob.Math.Expression();
 			d_tournamentSize.Parse(Configuration.TournamentSize);
 			
-			d_tournamentProbability = new Optimization.Math.Expression();
+			d_tournamentProbability = new Biorob.Math.Expression();
 			d_tournamentProbability.Parse(Configuration.TournamentProbability);
 			
-			d_mutationProbability = new Optimization.Math.Expression();
+			d_mutationProbability = new Biorob.Math.Expression();
 			d_mutationProbability.Parse(Configuration.MutationProbability);
 			
-			d_crossoverProbability = new Optimization.Math.Expression();
+			d_crossoverProbability = new Biorob.Math.Expression();
 			d_crossoverProbability.Parse(Configuration.CrossoverProbability);
 			
-			d_mutationRate = new Optimization.Math.Expression();
+			d_mutationRate = new Biorob.Math.Expression();
 			d_mutationRate.Parse(Configuration.MutationRate);
 		}
 		

@@ -30,17 +30,17 @@ namespace Optimization.Optimizers.PMPSO
 	public class PMPSO : PSONS.PSO
 	{
 		private Dictionary<uint, Particle> d_subswarmBests;
-		private Optimization.Math.Expression d_mutationProbability;
-		private Optimization.Math.Expression d_socialMutationProbability;
-		private Optimization.Math.Expression d_cognitiveMutationProbability;
+		private Biorob.Math.Expression d_mutationProbability;
+		private Biorob.Math.Expression d_socialMutationProbability;
+		private Biorob.Math.Expression d_cognitiveMutationProbability;
 		private List<Neighborhood> d_neighborhoods;
 		private double d_nextMerge;
 		
 		public PMPSO()
 		{
-			d_mutationProbability = new Optimization.Math.Expression();
-			d_socialMutationProbability = new Optimization.Math.Expression();
-			d_cognitiveMutationProbability = new Optimization.Math.Expression();
+			d_mutationProbability = new Biorob.Math.Expression();
+			d_socialMutationProbability = new Biorob.Math.Expression();
+			d_cognitiveMutationProbability = new Biorob.Math.Expression();
 			d_neighborhoods = new List<Neighborhood>();
 		}
 		
@@ -185,9 +185,9 @@ namespace Optimization.Optimizers.PMPSO
 			vars["N"] = Configuration.MaxIterations;
 			
 			// Evaluate the expressions for the different probabilities
-			State.MutationProbability = d_mutationProbability.Evaluate(vars, Math.Constants.Context);
-			State.SocialMutationProbability = d_socialMutationProbability.Evaluate(vars, Math.Constants.Context);
-			State.CognitiveMutationProbability = d_cognitiveMutationProbability.Evaluate(vars, Math.Constants.Context);
+			State.MutationProbability = d_mutationProbability.Evaluate(vars, Biorob.Math.Constants.Context);
+			State.SocialMutationProbability = d_socialMutationProbability.Evaluate(vars, Biorob.Math.Constants.Context);
+			State.CognitiveMutationProbability = d_cognitiveMutationProbability.Evaluate(vars, Biorob.Math.Constants.Context);
 			
 			// Update the population
 			base.Update();
