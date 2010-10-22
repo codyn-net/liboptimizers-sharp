@@ -27,18 +27,18 @@ namespace Optimization.Optimizers.SPSA
 	[Attributes.Optimizer(Description="Simultaneous Perturbation Stochastic Approximation")]
 	public class SPSA : Optimizer
 	{
-		Optimization.Math.Expression d_learningRate;
-		Optimization.Math.Expression d_perturbationRate;
-		Optimization.Math.Expression d_epsilon;
+		Biorob.Math.Expression d_learningRate;
+		Biorob.Math.Expression d_perturbationRate;
+		Biorob.Math.Expression d_epsilon;
 
 		List<Optimizers.SPSA.Solution> d_solutions;
 		Dictionary<string, object> d_rateContext;
 		
 		public SPSA()
 		{
-			d_learningRate = new Optimization.Math.Expression();
-			d_perturbationRate = new Optimization.Math.Expression();
-			d_epsilon = new Optimization.Math.Expression();
+			d_learningRate = new Biorob.Math.Expression();
+			d_perturbationRate = new Biorob.Math.Expression();
+			d_epsilon = new Biorob.Math.Expression();
 			
 			d_solutions = new List<Optimizers.SPSA.Solution>();
 			d_rateContext = new Dictionary<string, object>();

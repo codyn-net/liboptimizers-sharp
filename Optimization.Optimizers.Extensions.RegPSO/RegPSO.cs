@@ -7,15 +7,15 @@ namespace Optimization.Optimizers.Extensions.RegPSO
 	public class RegPSO : Extension
 	{
 		private double d_diagonal;
-		private Math.Expression d_stagnationThreshold;
-		private Math.Expression d_regroupingFactor;
+		private Biorob.Math.Expression d_stagnationThreshold;
+		private Biorob.Math.Expression d_regroupingFactor;
 		private Dictionary<string, object> d_context;
 
 		public RegPSO(Job job) : base(job)
 		{
 			d_context = new Dictionary<string, object>();
-			d_stagnationThreshold = new Math.Expression();
-			d_regroupingFactor = new Math.Expression();
+			d_stagnationThreshold = new Biorob.Math.Expression();
+			d_regroupingFactor = new Biorob.Math.Expression();
 		}
 
 		protected override Optimization.Settings CreateSettings()
@@ -108,7 +108,7 @@ namespace Optimization.Optimizers.Extensions.RegPSO
 			double radius = SwarmRadius();
 			
 			// Check stagnation
-			if (radius / d_diagonal >= d_stagnationThreshold.Evaluate(d_context, Math.Constants.Context))
+			if (radius / d_diagonal >= d_stagnationThreshold.Evaluate(d_context, Biorob.Math.Constants.Context))
 			{
 				return;
 			}
@@ -131,7 +131,7 @@ namespace Optimization.Optimizers.Extensions.RegPSO
 				}
 				
 				Boundary boundary = Job.Optimizer.Parameters[i].Boundary;
-				range[i] = System.Math.Min(boundary.Max - boundary.Min, d_regroupingFactor.Evaluate(d_context, Math.Constants.Context) * range[i]);
+				range[i] = System.Math.Min(boundary.Max - boundary.Min, d_regroupingFactor.Evaluate(d_context, Biorob.Math.Constants.Context) * range[i]);
 			}
 			
 			// Reinitialize particles
