@@ -1,0 +1,15 @@
+autom4te.cache
+*.m4
+bin
+config.log
+configure
+config.status
+install-sh
+*.tar.gz
+Makefile
+Makefile.in
+missing
+*.pc
+*.pidb
+*.userprefs
+test
