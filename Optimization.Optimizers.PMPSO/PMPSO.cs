@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using PSONS = Optimization.Optimizers.PSO;
 using System.Xml;
+using System.Text.RegularExpressions;
 
 namespace Optimization.Optimizers.PMPSO
 {
@@ -362,6 +363,25 @@ namespace Optimization.Optimizers.PMPSO
 			return true;
 		}
 		
+		private List<string> MatchParameterNames(string pattern)
+		{
+			Regex r;
+
+			r = new Regex(pattern);
+			
+			List<string> ret = new List<string>();
+			
+			foreach (Parameter parameter in Parameters)
+			{
+				if (r.IsMatch(parameter.Name))
+				{
+					ret.Add(parameter.Name);
+				}
+			}
+			
+			return ret;
+		}
+		
 		private bool AddParameterSet(MutationSet s, XmlNode node, bool parseSingle)
 		{
 			XmlNodeList parameters = node.SelectNodes("parameter");
@@ -369,13 +389,31 @@ namespace Optimization.Optimizers.PMPSO
 			
 			if (parameters.Count == 0 && parseSingle)
 			{
-				names.AddRange(node.InnerText.Split(','));
+				XmlAttribute attr = node.Attributes["match"];
+				
+				if (attr != null && attr.Value == "regex")
+				{
+					names.AddRange(MatchParameterNames(node.InnerText));
+				}
+				else
+				{
+					names.AddRange(node.InnerText.Split(','));
+				}
 			}
 			else
 			{
 				foreach (XmlNode n in parameters)
 				{
-					names.Add(n.Value);
+					XmlAttribute attr = node.Attributes["match"];
+				
+					if (attr != null && attr.Value == "regex")
+					{
+						names.AddRange(MatchParameterNames(n.InnerText));
+					}
+					else
+					{
+						names.Add(n.InnerText);
+					}
 				}
 			}
 			
