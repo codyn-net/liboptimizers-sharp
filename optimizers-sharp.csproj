@@ -66,6 +66,10 @@
     <Compile Include="Optimization.Optimizers.PSO\State.cs" />
     <Compile Include="Optimization.Optimizers.Extensions.RegPSO\Settings.cs" />
     <Compile Include="Optimization.Optimizers.Extensions.RegPSO\RegPSO.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.LPSO\ConstraintMatrix.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.LPSO\Linear.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.LPSO\LPSO.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.LPSO\Settings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

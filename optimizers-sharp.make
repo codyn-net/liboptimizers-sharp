@@ -70,7 +70,11 @@ FILES = \
 	Optimization.Optimizers.SPSA/Solution.cs \
 	Optimization.Optimizers.SPSA/Algorithm.cs \
 	Optimization.Optimizers.Extensions.RegPSO/RegPSO.cs \
-	Optimization.Optimizers.Extensions.RegPSO/Settings.cs
+	Optimization.Optimizers.Extensions.RegPSO/Settings.cs \
+	Optimization.Optimizers.Extensions.LPSO/ConstraintMatrix.cs \
+	Optimization.Optimizers.Extensions.LPSO/Linear.cs \
+	Optimization.Optimizers.Extensions.LPSO/LPSO.cs \
+	Optimization.Optimizers.Extensions.LPSO/Settings.cs
 
 DATA_FILES = 
 
