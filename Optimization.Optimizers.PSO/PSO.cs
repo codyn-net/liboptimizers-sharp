@@ -121,6 +121,14 @@ namespace Optimization.Optimizers.PSO
 			}
 		}
 		
+		private void ValidateVelocityUpdate(Particle particle, double[] velocityUpdate)
+		{
+			foreach (IPSOExtension ext in d_extensions)
+			{
+				ext.ValidateVelocityUpdate(particle, velocityUpdate);
+			}
+		}
+		
 		public override void Update(Solution solution)
 		{
 			Particle particle = (Particle)solution;
@@ -133,6 +141,8 @@ namespace Optimization.Optimizers.PSO
 			{
 				velocityUpdate[i] = CalculateVelocityUpdate(particle, best, i);
 			}
+			
+			ValidateVelocityUpdate(particle, velocityUpdate);
 
 			// Update is implemented on the particle
 			particle.Update(velocityUpdate);
