@@ -521,6 +521,11 @@ namespace Optimization.Optimizers.Extensions.LPSO
 		{
 			return PSO.State.VelocityUpdateType.Default | PSO.State.VelocityUpdateType.DisableGlobal | PSO.State.VelocityUpdateType.DisableLocal;
 		}
+		
+		public PSO.Particle GetUpdateBest(PSO.Particle particle)
+		{
+			return null;
+		}
 	}
 }
 

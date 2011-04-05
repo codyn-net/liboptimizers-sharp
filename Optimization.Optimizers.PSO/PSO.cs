@@ -88,6 +88,16 @@ namespace Optimization.Optimizers.PSO
 		
 		protected virtual Particle GetUpdateBest(Particle particle)
 		{
+			foreach (IPSOExtension ext in d_extensions)
+			{
+				Particle ret = ext.GetUpdateBest(particle);
+				
+				if (ret != null)
+				{
+					return ret;
+				}
+			}
+
 			return (Particle)Best;
 		}
 		
