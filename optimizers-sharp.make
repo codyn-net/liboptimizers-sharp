@@ -74,7 +74,9 @@ FILES = \
 	Optimization.Optimizers.Extensions.LPSO/ConstraintMatrix.cs \
 	Optimization.Optimizers.Extensions.LPSO/Linear.cs \
 	Optimization.Optimizers.Extensions.LPSO/LPSO.cs \
-	Optimization.Optimizers.Extensions.LPSO/Settings.cs
+	Optimization.Optimizers.Extensions.LPSO/Settings.cs \
+	Optimization.Optimizers.Extensions.StagePSO/StagePSO.cs \
+	Optimization.Optimizers.Extensions.StagePSO/Stage.cs
 
 DATA_FILES = 
 

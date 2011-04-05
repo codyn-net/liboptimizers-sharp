@@ -70,6 +70,8 @@
     <Compile Include="Optimization.Optimizers.Extensions.LPSO\Linear.cs" />
     <Compile Include="Optimization.Optimizers.Extensions.LPSO\LPSO.cs" />
     <Compile Include="Optimization.Optimizers.Extensions.LPSO\Settings.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.StagePSO\StagePSO.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.StagePSO\Stage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -79,5 +81,6 @@
     <Folder Include="Optimization.Optimizers.GA\" />
     <Folder Include="Optimization.Optimizers.ADPSO\" />
     <Folder Include="Optimization.Optimizers.Extensions.RegPSO\" />
+    <Folder Include="Optimization.Optimizers.Extensions.StagePSO\" />
   </ItemGroup>
 </Project>
