@@ -78,12 +78,27 @@ namespace Optimization.Optimizers.PSO
 		
 		protected override void UpdateBest()
 		{
+			base.UpdateBest();
+			
 			foreach (Solution sol in Population)
 			{
-				((Particle)sol).UpdateBest();
-			}
+				bool made = false;
+				Particle particle = (Particle)sol;
 
-			base.UpdateBest();
+				foreach (IPSOExtension extension in d_extensions)
+				{
+					if (extension.UpdateParticleBest(particle))
+					{
+						made = true;
+						break;
+					}
+				}
+				
+				if (!made)
+				{
+					particle.UpdateBest();
+				}
+			}
 		}
 		
 		protected virtual Particle GetUpdateBest(Particle particle)
