@@ -26,7 +26,7 @@ using System.Data;
 namespace Optimization.Optimizers.Extensions.StagePSO
 {
 	[Optimization.Attributes.Extension(Description = "Staged Fitness PSO", AppliesTo = new Type[] {typeof(PSO.PSO)})]
-	public class StagePSO : Extension, PSO.IPSOExtension
+	public class StagePSO : Extension
 	{
 		private List<Stage> d_stages;
 		private Dictionary<Solution, Stage> d_neighborhoods;
@@ -37,14 +37,55 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			d_neighborhoods = new Dictionary<Solution, Stage>();
 		}
 		
+		private void Setup()
+		{
+			Fitness.OverrideCompare(CompareSolutions);
+		}
+		
+		private int CompareSolutions(Fitness f1, Fitness f2)
+		{
+			Stage s1 = f1.GetUserData<Stage>("StagePSOStage");
+			Stage s2 = f2.GetUserData<Stage>("StagePSOStage");
+			
+			// Just because in the first iteration, the progress is sent
+			// before calculating the stages
+			if (s1 == null && s2 == null)
+			{
+				UpdateNeighborhoods();
+
+				s1 = f1.GetUserData<Stage>("StagePSOStage");
+				s2 = f2.GetUserData<Stage>("StagePSOStage");
+			}
+			
+			if (s1.Priority > s2.Priority)
+			{
+				return 1;
+			}
+			
+			if (s2.Priority > s1.Priority)
+			{
+				return -1;
+			}
+			
+			return s1.Compare(f1, f2);
+		}
+		
 		public override void FromXml(XmlNode root)
 		{
+			uint priority = 0;
 			base.FromXml(root);
 			
 			foreach (XmlNode node in root.SelectNodes("stage"))
 			{
-				d_stages.Add(new Stage(node));
+				d_stages.Add(new Stage(node, priority++));
 			}
+			
+			Setup();
+		}
+		
+		public override bool Finished()
+		{
+			return base.Finished();
 		}
 		
 		private void UpdateNeighborhoods()
@@ -68,10 +109,11 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 					{
 						stage.Add(particle);
 						d_neighborhoods[sol] = stage;
-
-						sol.Fitness.Value = stage.Value(particle.Fitness.Context);
-						sol.Data["stage"] = i;
-
+						
+						particle.Fitness.SetUserData("StagePSOStage", stage);
+						particle.Fitness.Value = stage.Value(particle.Fitness.Context);
+						
+						particle.Data["stage"] = i;
 						return true;
 					}
 					else
@@ -109,56 +151,24 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer)
 		{
 			base.FromStorage(storage, optimizer);
+			uint priority = 0;
 			
 			storage.Query("SELECT `expression`, `condition` FROM `stages` ORDER BY `id`", delegate (IDataReader reader)
 			{
 				string expression = (string)reader[0];
 				string condition = (string)reader[1];
 
-				d_stages.Add(new Stage(expression, condition));
+				d_stages.Add(new Stage(expression, condition, priority++));
 				return true;
 			});
-		}
-	
-		public double CalculateVelocityUpdate(PSO.Particle particle, PSO.Particle best, int i)
-		{
-			return 0;
-		}
-
-		public PSO.State.VelocityUpdateType VelocityUpdateComponents(PSO.Particle particle)
-		{
-			return PSO.State.VelocityUpdateType.Default;
-		}
-
-		public void ValidateVelocityUpdate(PSO.Particle particle, double[] velocityUpdate)
-		{
-		}
-
-		public PSO.Particle GetUpdateBest(PSO.Particle particle)
-		{
-			if (d_neighborhoods.ContainsKey(particle))
-			{
-				return d_neighborhoods[particle].Best;
-			}
-			else
-			{
-				return null;
-			}
+			
+			Setup();
 		}
 		
-		public override Solution UpdateBest()
+		public override void Next()
 		{
+			base.Next();
 			UpdateNeighborhoods();
-
-			for (int i = d_stages.Count - 1; i >= 0; --i)
-			{
-				if (d_stages[i].Best != null)
-				{
-					return d_stages[i].Best;
-				}
-			}
-			
-			return null;
 		}
 	}
 }
