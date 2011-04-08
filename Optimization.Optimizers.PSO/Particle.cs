@@ -27,8 +27,8 @@ namespace Optimization.Optimizers.PSO
 {
 	public class Particle : Solution
 	{
-		List<double> d_velocity;
-		Particle d_personalBest;
+		private List<double> d_velocity;
+		private Particle d_personalBest;
 		
 		public Particle(uint id, Fitness fitness, Optimization.State state) : base (id, fitness, state)
 		{
