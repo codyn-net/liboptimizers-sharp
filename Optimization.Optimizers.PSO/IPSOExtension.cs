@@ -9,5 +9,6 @@ namespace Optimization.Optimizers.PSO
 		void ValidateVelocityUpdate(Particle particle, double[] velocityUpdate);
 		
 		Particle GetUpdateBest(Particle particle);
+		bool UpdateParticleBest(Particle particle);
 	}
 }

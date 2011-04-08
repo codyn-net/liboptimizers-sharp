@@ -526,6 +526,11 @@ namespace Optimization.Optimizers.Extensions.LPSO
 		{
 			return null;
 		}
+		
+		public bool UpdateParticleBest(PSO.Particle particle)
+		{
+			return false;
+		}
 	}
 }
 
