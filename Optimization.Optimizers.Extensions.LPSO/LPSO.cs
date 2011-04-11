@@ -86,7 +86,7 @@ namespace Optimization.Optimizers.Extensions.LPSO
 				
 				storage.Query(@"INSERT INTO `constraints` DEFAULT VALUES");
 
-				int cid = storage.LastInsertId;
+				long cid = storage.LastInsertId;
 
 				foreach (int p in cons.Parameters)
 				{
@@ -102,7 +102,7 @@ namespace Optimization.Optimizers.Extensions.LPSO
 					              eq.Equality ? 1 : 0,
 					              eq.Value);
 					
-					int eqid = storage.LastInsertId;
+					long eqid = storage.LastInsertId;
 					
 					foreach (double coefficient in eq.Coefficients)
 					{
