@@ -134,18 +134,21 @@ namespace Optimization.Optimizers.PMPSO
 			}
 			
 			Parameters.Clear();
-			Velocity.Clear();
+			
+			List<double> vel = new List<double>();
 			
 			for (int i = 0; i < d_allParameters.Count; ++i)
 			{
 				if (!removeIndices.Contains(i))
 				{
 					Parameters.Add(d_allParameters[i]);
-					Velocity.Add(d_allVelocities[i]);
+					vel.Add(d_allVelocities[i]);
 
 					d_activeIndices.Add((uint)i);
 				}
 			}
+			
+			Velocity = vel.ToArray();
 
 			RecalculateHash();
 			
@@ -227,7 +230,7 @@ namespace Optimization.Optimizers.PMPSO
 		
 		private void TrackVelocity()
 		{
-			for (int i = 0; i < Velocity.Count; ++i)
+			for (int i = 0; i < Velocity.Length; ++i)
 			{
 				d_allVelocities[(int)d_activeIndices[i]] = Velocity[i];
 				

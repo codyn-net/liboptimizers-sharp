@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Optimization;
 using System.Xml;
 using System.Data;
+using System.Linq;
 
 /**
  *
@@ -157,20 +158,38 @@ namespace Optimization.Optimizers.Extensions.LPSO
 		private void Initialize(PSO.Particle particle, ConstraintMatrix constraint)
 		{
 			List<Linear.Vector> eqs = constraint.Equations;
+			List<Linear.Vector> nulleqs = constraint.NullspaceEquations;
+
 			double[] rr = new double[eqs[0].Count];
+			double[] rrn = new double[nulleqs[0].Count];
 			double s = 0;
+			double sn = 0;
+			
+			PSO.Settings settings = (PSO.Settings)Job.Optimizer.Configuration;
 			
 			// Generate random variables
 			for (int i = 0; i < rr.Length; ++i)
 			{
 				rr[i] = particle.State.Random.NextDouble();
+
 				s += rr[i];
+			}
+			
+			for (int i = 0; i < rrn.Length; ++i)
+			{
+				rrn[i] = particle.State.Random.NextDouble();
+				sn += rrn[i];
 			}
 			
 			// Normalize such that sum == 1
 			for (int i = 0; i < rr.Length; ++i)
 			{
 				rr[i] /= s;
+			}
+			
+			for (int i = 0; i < rrn.Length; ++i)
+			{
+				rrn[i] /= sn;
 			}
 			
 			// Initialize parameters of particle according to linear equations
@@ -188,8 +207,23 @@ namespace Optimization.Optimizers.Extensions.LPSO
 				
 				param.Value = v;
 				
-				// Also set velocity to 0
-				particle.Velocity[idx] = 0;
+				v = 0;
+
+				if (Configuration.HasInitialVelocity)
+				{
+					for (int j = 0; j < rrn.Length; ++j)
+					{
+						v += rrn[j] * constraint.NullspaceEquations[i][j];
+					}
+					
+					if (settings.MaxVelocity > 0)
+					{
+						v *= settings.MaxVelocity;
+					}
+				}
+				
+				// Also set velocity to v
+				particle.SetVelocity(idx, v);
 			}
 		}
 
@@ -198,11 +232,16 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			base.Initialize(solution);
 			
 			PSO.Particle p = (PSO.Particle)solution;
+			double pp = 0;
 			
 			// Generate initial conditions to adhere to the constraints...
 			foreach (ConstraintMatrix cons in d_constraints)
 			{
 				Initialize(p, cons);
+				double[] vel = p.Velocity;
+				
+				ValidateVelocityUpdate(p, vel, cons);
+				p.Velocity = vel;
 			}
 		}
 		
@@ -342,7 +381,39 @@ namespace Optimization.Optimizers.Extensions.LPSO
 					cons.R1[solution.Id] = Job.Optimizer.State.Random.NextDouble();
 					cons.R2[solution.Id] = Job.Optimizer.State.Random.NextDouble();
 				}
+				
+				double s = 0;
+
+				for (int i = 0; i < cons.NullspaceEquations[0].Count; ++i)
+				{
+					cons.RN[i] = Job.Optimizer.State.Random.NextDouble();
+					s += cons.RN[i];
+				}
+				
+				for (int i = 0; i < cons.NullspaceEquations[0].Count; ++i)
+				{
+					cons.RN[i] /= s;
+				}
 			}
+		}
+		
+		private void ConstraintViolationError(string msg, ConstraintMatrix cons, Solution solution, double[] values, Linear.Constraint constraint)
+		{
+			List<string> s = new List<string>();
+			double tot = 0;
+					
+			for (int i = 0; i < cons.Parameters.Count; ++i)
+			{
+				int idx = cons.Parameters[i];
+				s.Add(String.Format("{0:0.000} * {1} ({2:0.000})", constraint.Coefficients[i], solution.Parameters[idx].Name, values[idx]));
+				
+				tot += constraint.Coefficients[i] * values[idx];
+			}
+		
+			string ss = String.Join(" + ", s.ToArray());
+		
+			Console.WriteLine("Constraint violated ({4}): {0} {1} {2:0.000} (expected {3:0.000})", ss, constraint.Equality ? "=" : "<=", tot, constraint.Value, msg);
+			
 		}
 		
 		private bool ValidateConstraints()
@@ -352,6 +423,8 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			
 			foreach (Solution solution in Job.Optimizer.Population)
 			{
+				PSO.Particle p = (PSO.Particle)solution;
+				
 				for (int i = 0; i < solution.Parameters.Count; ++i)
 				{
 					Parameter param = solution.Parameters[i];
@@ -367,24 +440,25 @@ namespace Optimization.Optimizers.Extensions.LPSO
 				foreach (ConstraintMatrix cons in d_constraints)
 				{
 					Linear.Constraint constraint;
+					double[] values = Array.ConvertAll<Parameter, double>(solution.Parameters.ToArray(), a => a.Value);
 
-					if (cons.Validate(solution, out constraint))
+					if (!cons.Validate(values, out constraint))
 					{
+						ConstraintViolationError("pos", cons, solution, values, constraint);
+						isok = false;
+						
 						continue;
 					}
 					
-					List<string> s = new List<string>();
+					values = p.Velocity;
 					
-					for (int i = 0; i < cons.Parameters.Count; ++i)
+					if (!cons.ValidateNull(values, out constraint))
 					{
-						int idx = cons.Parameters[i];
-						s.Add(String.Format("{0:0.000} * {1} ({2:0.000})", constraint.Coefficients[i], solution.Parameters[idx].Name, solution.Parameters[idx].Value));
+						ConstraintViolationError("vel", cons, solution, values, constraint);
+						isok = false;
+						
+						continue;
 					}
-					
-					string ss = String.Join(" + ", s.ToArray());
-					
-					Console.WriteLine("Constraint violated: {0} {1} {2:0.000}", ss, constraint.Equality ? "=" : "<=", constraint.Value);
-					isok = false;
 				}
 			}
 			
@@ -411,12 +485,17 @@ namespace Optimization.Optimizers.Extensions.LPSO
 				double newvel = velocityUpdate[idx];
 				double newpos = param.Value + newvel;
 				double sc = -1;
+				
+				if (newvel == 0)
+				{
+					continue;
+				}
 			
 				double maxpv = maxvel * (param.Boundary.Max - param.Boundary.Min);
 			
 				if (maxvel > 0 && System.Math.Abs(newvel) > maxpv)
 				{
-					sc = maxpv / velocityUpdate[idx];
+					sc = System.Math.Abs(maxpv / newvel);
 				
 					if (maxsc == -1 || sc < maxsc)
 					{
@@ -426,11 +505,11 @@ namespace Optimization.Optimizers.Extensions.LPSO
 				
 				if (newpos < param.Boundary.Min)
 				{
-					sc = (param.Boundary.Min - param.Value) / velocityUpdate[idx];
+					sc = System.Math.Abs((param.Boundary.Min - param.Value) / newvel);
 				}
 				else if (newpos > param.Boundary.Max)
 				{
-					sc = (param.Boundary.Max - param.Value) / velocityUpdate[idx];
+					sc = System.Math.Abs((param.Boundary.Max - param.Value) / newvel);
 				}
 				else if (sc == -1)
 				{
@@ -449,7 +528,7 @@ namespace Optimization.Optimizers.Extensions.LPSO
 				{
 					Parameter param = particle.Parameters[idx];
 
-					velocityUpdate[idx] = velocityUpdate[idx] * maxsc;
+					velocityUpdate[idx] *= maxsc;
 					
 					/* This is a bit strange, but it is needed to solve numerical
 					   inaccuracies when multipying/dividing and we MUST ensure the
@@ -475,23 +554,60 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			}
 		}
 		
+		private double CalculateGCVelocityUpdate(PSO.Particle particle, PSO.Particle gbest, int i)
+		{
+			PSO.Settings settings = (PSO.Settings)Job.Optimizer.Configuration;
+			double ret;
+			
+			// The idea here is to set the new particle position in an area around
+			// the best solution, while holding the constraint
+
+			// Cancel momentum update
+			ret = -particle.Velocity[i] * settings.Constriction;
+			
+			// Reset position
+			ret -= particle.Parameters[i].Value;
+			
+			// Move to particle best position
+			ret += gbest.Parameters[i].Value;
+			
+			// Add random perturbation
+			ConstraintMatrix cons = d_constraintsFor[i];
+			List<Linear.Vector> eqs = cons.NullspaceEquations;
+			
+			int idx = cons.ParameterIndex(i);
+			
+			// Generate random value on the null space of the constraints
+			for (int j = 0; j < eqs[idx].Count; ++j)
+			{
+				ret += cons.RN[j] * eqs[idx][j];
+			}
+
+			return ret * Configuration.GuaranteedConvergence;
+		}
+		
 		public double CalculateVelocityUpdate(PSO.Particle particle, PSO.Particle gbest, int i)
 		{
 			// If there are no constraints, then just use the default
 			double r1;
 			double r2;
-
-			if (!d_constraintsFor.ContainsKey(i))
+			
+			if (d_constraintsFor.ContainsKey(i))
 			{
-				r1 = particle.State.Random.NextDouble();
-				r2 = particle.State.Random.NextDouble();
-			}
-			else
-			{		
+				if (particle.Id == gbest.Id && Configuration.GuaranteedConvergence > 0)
+				{
+					return CalculateGCVelocityUpdate(particle, gbest, i);
+				}
+
 				ConstraintMatrix cons = d_constraintsFor[i];
 				
 				r1 = cons.R1[particle.Id];
 				r2 = cons.R2[particle.Id];
+			}
+			else
+			{
+				r1 = particle.State.Random.NextDouble();
+				r2 = particle.State.Random.NextDouble();
 			}
 
 			PSO.Settings settings = (PSO.Settings)Job.Optimizer.Configuration;
@@ -519,7 +635,7 @@ namespace Optimization.Optimizers.Extensions.LPSO
 
 		public PSO.State.VelocityUpdateType VelocityUpdateComponents(PSO.Particle particle)
 		{
-			return PSO.State.VelocityUpdateType.Default | PSO.State.VelocityUpdateType.DisableGlobal | PSO.State.VelocityUpdateType.DisableLocal;
+			return PSO.State.VelocityUpdateType.DisableMomentum | PSO.State.VelocityUpdateType.DisableGlobal | PSO.State.VelocityUpdateType.DisableLocal;
 		}
 		
 		public PSO.Particle GetUpdateBest(PSO.Particle particle)

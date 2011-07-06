@@ -279,12 +279,25 @@ namespace Optimization.Optimizers.PSO
 			d_velocity.Add(State.Random.Range(-span, span) * factor);
 		}
 		
-		public List<double> Velocity
+		public double[] Velocity
 		{
 			get
 			{
-				return d_velocity;
+				return d_velocity.ToArray();
 			}
+			set
+			{
+				d_velocity.Clear();
+				d_velocity.AddRange(value);
+				
+				UpdateVelocityData();
+			}
+		}
+		
+		public void SetVelocity(int idx, double vel)
+		{
+			d_velocity[idx] = vel;
+			UpdateVelocityData();
 		}
 		
 		public virtual Particle PersonalBest

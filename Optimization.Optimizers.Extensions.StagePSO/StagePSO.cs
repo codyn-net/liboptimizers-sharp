@@ -18,7 +18,7 @@ using System.Data;
  * <extensions>
  *   <extension name="stagepso">
  *     <stage>speed</stage>
- *     <stage condition="speed >= 1.1 && speed <= 1.3">1 / torque</stage>
+ *     <stage condition="speed &gt;= 1.1 &amp;&amp; speed &lt;= 1.3">1 / torque</stage>
  *   </extension>
  * </extensions>
  *
@@ -30,11 +30,13 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 	{
 		private List<Stage> d_stages;
 		private Dictionary<Solution, Stage> d_neighborhoods;
+		private List<object> d_lastBest;
 
 		public StagePSO(Job job) : base(job)
 		{
 			d_stages = new List<Stage>();
 			d_neighborhoods = new Dictionary<Solution, Stage>();
+			d_lastBest = new List<object>();
 		}
 		
 		private void Setup()
@@ -83,9 +85,87 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			Setup();
 		}
 		
+		public override bool SuppressConvergenceCalculation ()
+		{
+			return true;
+		}
+		
+		private bool BestDifference(int window, out double val)
+		{
+			// Check for the last 'window' obtained fitnesses in the last stage
+			int ptr = d_lastBest.Count - 1;
+			double minval = double.MaxValue;
+			double maxval = double.MinValue;
+			
+			val = 0;
+
+			while (window >= 0 && ptr >= 0)
+			{
+				if (d_lastBest[ptr] != null)
+				{
+					double fitval = (double)d_lastBest[ptr];
+					maxval = Math.Max(maxval, fitval);
+					minval = Math.Min(minval, fitval);
+
+					--window;
+				}
+
+				--ptr;
+			}
+			
+			if (window < 0)
+			{
+				val = maxval - minval;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
 		public override bool Finished()
 		{
-			return base.Finished();
+			Optimizer opti = Job.Optimizer;
+			
+			uint miniter = (uint)opti.MinIterations.Evaluate(Biorob.Math.Constants.Context);
+			
+			Solution best = opti.Best;
+			
+			if (best != null)
+			{
+				Stage stage = best.Fitness.GetUserData<Stage>("StagePSOStage");
+				
+				if (stage == d_stages[d_stages.Count - 1])
+				{
+					d_lastBest.Add(best.Fitness.Value);
+				}
+				else
+				{
+					d_lastBest.Add(null);
+				}
+			}
+			else
+			{
+				d_lastBest.Add(null);
+			}
+			
+			if (opti.CurrentIteration < miniter)
+			{
+				return false;
+			}
+			
+			double threshold = opti.ConvergenceThreshold.Evaluate(Biorob.Math.Constants.Context);
+			uint window = (uint)opti.ConvergenceWindow.Evaluate(Biorob.Math.Constants.Context);
+			
+			double diff;
+			
+			if (threshold > 0 && opti.CurrentIteration >= window && BestDifference((int)window, out diff))
+			{
+				return diff <= threshold;
+			}
+			
+			return false;
 		}
 		
 		private void UpdateNeighborhoods()
@@ -113,7 +193,10 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 						particle.Fitness.SetUserData("StagePSOStage", stage);
 						particle.Fitness.Value = stage.Value(particle.Fitness.Context);
 						
-						particle.Data["stage"] = i;
+						particle.Data["StagePSO::stage"] = i;
+						particle.Data["StagePSO::waslast"] = particle.Data["StagePSO::islast"];
+						particle.Data["StagePSO::islast"] = (i == d_stages.Count - 1 ? "1" : "0");
+						
 						return true;
 					}
 					else
@@ -129,6 +212,13 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			base.Initialize();
 			
 			StoreStages();
+			
+			foreach (Solution sol in Job.Optimizer.Population)
+			{
+				sol.Data["StagePSO::waslast"] = "0";
+				sol.Data["StagePSO::islast"] = "0";
+				sol.Data["StagePSO::stage"] = "0";
+			}
 		}
 		
 		private void StoreStages()
