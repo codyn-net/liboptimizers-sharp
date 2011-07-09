@@ -232,7 +232,6 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			base.Initialize(solution);
 			
 			PSO.Particle p = (PSO.Particle)solution;
-			double pp = 0;
 			
 			// Generate initial conditions to adhere to the constraints...
 			foreach (ConstraintMatrix cons in d_constraints)
