@@ -413,7 +413,7 @@ namespace Optimization.Optimizers.PMPSO
 			
 			foreach (XmlNode p in parameter)
 			{
-				if (!AddParameterSet(s, ParameterSetNames(node)))
+				if (!AddParameterSet(s, ParameterSetNames(p)))
 				{
 					return;
 				}
