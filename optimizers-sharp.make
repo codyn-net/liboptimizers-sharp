@@ -50,6 +50,8 @@ FILES = \
 	Optimization.Optimizers.ADPSO/Settings.cs \
 	Optimization.Optimizers.GA/GA.cs \
 	Optimization.Optimizers.GA/Settings.cs \
+	Optimization.Optimizers.GCPSO/GCPSO.cs \
+	Optimization.Optimizers.GCPSO/Settings.cs \
 	Optimization.Optimizers.PMPSO/Fusion.cs \
 	Optimization.Optimizers.PMPSO/MutationSet.cs \
 	Optimization.Optimizers.PMPSO/Neighborhood.cs \
