@@ -11,7 +11,7 @@ namespace Optimization.Optimizers.Extensions.LPSO
 		private List<Linear.Constraint> d_nullspaceConstraints;
 		private List<Linear.Vector> d_nullspaceEquations;
 
-		private List<int> d_parameters;
+		private List<string> d_parameters;
 		private List<Boundary> d_boundaries;
 
 		private double[] d_r1;
@@ -20,7 +20,7 @@ namespace Optimization.Optimizers.Extensions.LPSO
 
 		public ConstraintMatrix(uint populationSize)
 		{
-			d_parameters = new List<int>();
+			d_parameters = new List<string>();
 
 			d_constraints = new List<Linear.Constraint>();
 			d_equations = new List<Linear.Vector>();
@@ -110,9 +110,9 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			return true;
 		}
 		
-		public void Add(int idx, Parameter parameter)
+		public void Add(Parameter parameter)
 		{
-			d_parameters.Add(idx);
+			d_parameters.Add(parameter.Name);
 			d_boundaries.Add(parameter.Boundary);
 		}
 		
@@ -126,12 +126,12 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			d_constraints.Add(constraint);
 		}
 		
-		private bool Validate(double[] values, List<Linear.Constraint> constraints, out Linear.Constraint constraint)
+		private bool Validate(Dictionary<string, double> values, List<Linear.Constraint> constraints, out Linear.Constraint constraint)
 		{
 			Linear.Vector vals = new Linear.Vector(d_parameters.Count);
 			constraint = null;
 			
-			foreach (int idx in d_parameters)
+			foreach (string idx in d_parameters)
 			{
 				vals.Add(values[idx]);
 			}
@@ -148,12 +148,12 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			return true;
 		}
 		
-		public bool Validate(double[] values, out Linear.Constraint constraint)
+		public bool Validate(Dictionary<string, double> values, out Linear.Constraint constraint)
 		{
 			return Validate(values, d_constraints, out constraint);
 		}
 
-		public bool ValidateNull(double[] values, out Linear.Constraint constraint)
+		public bool ValidateNull(Dictionary<string, double> values, out Linear.Constraint constraint)
 		{
 			return Validate(values, d_nullspaceConstraints, out constraint);
 		}
@@ -190,7 +190,7 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			}
 		}
 		
-		public List<int> Parameters
+		public List<string> Parameters
 		{
 			get
 			{
@@ -198,9 +198,9 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			}
 		}
 		
-		public int ParameterIndex(int parameterId)
+		public int ParameterIndex(string name)
 		{
-			return d_parameters.IndexOf(parameterId);
+			return d_parameters.IndexOf(name);
 		}
 		
 		public double[] R1

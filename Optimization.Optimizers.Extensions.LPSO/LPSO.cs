@@ -39,12 +39,12 @@ namespace Optimization.Optimizers.Extensions.LPSO
 	public class LPSO : Extension, PSO.IPSOExtension
 	{
 		private List<ConstraintMatrix> d_constraints;
-		private Dictionary<int, ConstraintMatrix> d_constraintsFor;
+		private Dictionary<string, ConstraintMatrix> d_constraintsFor;
 
 		public LPSO(Job job) : base(job)
 		{
 			d_constraints = new List<ConstraintMatrix>();
-			d_constraintsFor = new Dictionary<int, ConstraintMatrix>();
+			d_constraintsFor = new Dictionary<string, ConstraintMatrix>();
 		}
 
 		protected override Optimization.Settings CreateSettings()
@@ -77,9 +77,9 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			storage.Query("DROP TABLE IF EXISTS `constraint_coefficients`");
 
 			storage.Query("CREATE TABLE `constraints` (`id` INTEGER PRIMARY KEY)");
-			storage.Query("CREATE TABLE `constraint_parameters` (`id` INTEGER PRIMARY KEY, `constraint` INT, `parameter` INT)");
+			storage.Query("CREATE TABLE `constraint_parameters` (`id` INTEGER PRIMARY KEY, `constraint` INT, `parameter` TEXT)");
 			storage.Query("CREATE TABLE `constraint_equations` (`id` INTEGER PRIMARY KEY, `constraint` INT, `equality` INT, `value` DOUBLE)");
-			storage.Query("CREATE TABLE `constraint_coefficients` (`id` INTEGER PRIMARY KEY, `equation` INT, `parameter` INT, `value` DOUBLE)");
+			storage.Query("CREATE TABLE `constraint_coefficients` (`id` INTEGER PRIMARY KEY, `equation` INT, `value` DOUBLE)");
 			
 			for (int i = 0; i < d_constraints.Count; ++i)
 			{
@@ -89,7 +89,7 @@ namespace Optimization.Optimizers.Extensions.LPSO
 
 				long cid = storage.LastInsertId;
 
-				foreach (int p in cons.Parameters)
+				foreach (string p in cons.Parameters)
 				{
 					storage.Query(@"INSERT INTO `constraint_parameters` (`constraint`, `parameter`) VALUES (@0, @1)",
 					              cid,
@@ -125,10 +125,10 @@ namespace Optimization.Optimizers.Extensions.LPSO
 				int consid = reader.GetInt32(0);
 				
 				storage.Query("SELECT `parameter` FROM `constraint_parameters` WHERE `constraint` = @0", delegate (IDataReader rd) {
-					int idx = reader.GetInt32(0);
+					string name = reader.GetString(0);
 					
-					cons.Add(idx, Job.Optimizer.Parameters[idx]);
-					d_constraintsFor[idx] = cons;
+					cons.Add(Job.Optimizer.Parameter(name));
+					d_constraintsFor[name] = cons;
 					
 					return true;
 				}, consid);
@@ -195,9 +195,9 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			// Initialize parameters of particle according to linear equations
 			for (int i = 0; i < constraint.Parameters.Count; ++i)
 			{
-				int idx = constraint.Parameters[i];
+				string name = constraint.Parameters[i];
 
-				Parameter param = particle.Parameters[idx];
+				Parameter param = particle.Parameter(name);
 				double v = 0;
 				
 				for (int j = 0; j < rr.Length; ++j)
@@ -221,6 +221,8 @@ namespace Optimization.Optimizers.Extensions.LPSO
 						v *= settings.MaxVelocity;
 					}
 				}
+				
+				int idx = particle.Parameters.IndexOf(param);
 				
 				// Also set velocity to v
 				particle.SetVelocity(idx, v);
@@ -258,8 +260,8 @@ namespace Optimization.Optimizers.Extensions.LPSO
 		{
 			XmlNodeList lst = node.SelectNodes("parameters/parameter");
 			
-			List<string> pars = new List<string>();
-			
+			List<string > pars = new List<string>();
+
 			if (lst.Count == 0)
 			{
 				XmlNode parameters = node.SelectSingleNode("parameters");
@@ -293,7 +295,7 @@ namespace Optimization.Optimizers.Extensions.LPSO
 					throw new Exception(String.Format("The parameter `{0}' could not be found", pname));
 				}
 				
-				constr.Add(Job.Optimizer.Parameters.IndexOf(p), p);
+				constr.Add(p);
 			}
 			
 			foreach (XmlNode eq in node.SelectNodes("equation"))
@@ -342,17 +344,17 @@ namespace Optimization.Optimizers.Extensions.LPSO
 				throw new Exception("Could not solve system of linear constraints!");
 			}
 			
-			foreach (int param in constr.Parameters)
+			foreach (string param in constr.Parameters)
 			{
 				if (d_constraintsFor.ContainsKey(param))
 				{
-					throw new Exception(String.Format("The parameter `{0}' is already part of another constraint...", Job.Optimizer.Parameters[param].Name));
+					throw new Exception(String.Format("The parameter `{0}' is already part of another constraint...", param));
 				}
 			}
 
 			d_constraints.Add(constr);
 			
-			foreach (int param in constr.Parameters)
+			foreach (string param in constr.Parameters)
 			{
 				d_constraintsFor[param] = constr;
 			}
@@ -396,17 +398,17 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			}
 		}
 		
-		private void ConstraintViolationError(string msg, ConstraintMatrix cons, Solution solution, double[] values, Linear.Constraint constraint)
+		private void ConstraintViolationError(string msg, ConstraintMatrix cons, Solution solution, Dictionary<string, double> values, Linear.Constraint constraint)
 		{
-			List<string> s = new List<string>();
+			List<string > s = new List<string>();
 			double tot = 0;
 					
 			for (int i = 0; i < cons.Parameters.Count; ++i)
 			{
-				int idx = cons.Parameters[i];
-				s.Add(String.Format("{0:0.000} * {1} ({2:0.000})", constraint.Coefficients[i], solution.Parameters[idx].Name, values[idx]));
+				string name = cons.Parameters[i];
+				s.Add(String.Format("{0:0.000} * {1} ({2:0.000})", constraint.Coefficients[i], name, values[name]));
 				
-				tot += constraint.Coefficients[i] * values[idx];
+				tot += constraint.Coefficients[i] * values[name];
 			}
 		
 			string ss = String.Join(" + ", s.ToArray());
@@ -439,7 +441,12 @@ namespace Optimization.Optimizers.Extensions.LPSO
 				foreach (ConstraintMatrix cons in d_constraints)
 				{
 					Linear.Constraint constraint;
-					double[] values = Array.ConvertAll<Parameter, double>(solution.Parameters.ToArray(), a => a.Value);
+					Dictionary<string, double > values = new Dictionary<string, double>();
+					
+					foreach (Parameter param in solution.Parameters)
+					{
+						values[param.Name] = param.Value;
+					}
 
 					if (!cons.Validate(values, out constraint))
 					{
@@ -449,7 +456,12 @@ namespace Optimization.Optimizers.Extensions.LPSO
 						continue;
 					}
 					
-					values = p.Velocity;
+					values.Clear();
+					
+					for (int i = 0; i < p.Parameters.Count; ++i)
+					{
+						values[p.Parameters[i].Name] = p.Velocity[i];
+					}
 					
 					if (!cons.ValidateNull(values, out constraint))
 					{
@@ -477,9 +489,10 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			
 			double maxvel = ((PSO.Settings)Job.Optimizer.Configuration).MaxVelocity;
 			
-			foreach (int idx in cons.Parameters)
+			foreach (string name in cons.Parameters)
 			{
-				Parameter param = particle.Parameters[idx];
+				Parameter param = particle.Parameter(name);
+				int idx = particle.Parameters.IndexOf(param);
 			
 				double newvel = velocityUpdate[idx];
 				double newpos = param.Value + newvel;
@@ -523,9 +536,10 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			
 			if (maxsc != -1)
 			{
-				foreach (int idx in cons.Parameters)
+				foreach (string name in cons.Parameters)
 				{
-					Parameter param = particle.Parameters[idx];
+					Parameter param = particle.Parameter(name);
+					int idx = particle.Parameters.IndexOf(param);
 
 					velocityUpdate[idx] *= maxsc;
 					
@@ -571,10 +585,12 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			ret += gbest.Parameters[i].Value;
 			
 			// Add random perturbation
-			ConstraintMatrix cons = d_constraintsFor[i];
+			string name = particle.Parameters[i].Name;
+
+			ConstraintMatrix cons = d_constraintsFor[name];
 			List<Linear.Vector> eqs = cons.NullspaceEquations;
 			
-			int idx = cons.ParameterIndex(i);
+			int idx = cons.ParameterIndex(name);
 			
 			// Generate random value on the null space of the constraints
 			for (int j = 0; j < eqs[idx].Count; ++j)
@@ -591,14 +607,17 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			double r1;
 			double r2;
 			
-			if (d_constraintsFor.ContainsKey(i))
+			Parameter parameter = particle.Parameters[i];
+			string name = parameter.Name;
+			
+			if (d_constraintsFor.ContainsKey(name))
 			{
 				if (particle.Id == gbest.Id && Configuration.GuaranteedConvergence > 0)
 				{
 					return CalculateGCVelocityUpdate(particle, gbest, i);
 				}
 
-				ConstraintMatrix cons = d_constraintsFor[i];
+				ConstraintMatrix cons = d_constraintsFor[name];
 				
 				r1 = cons.R1[particle.Id];
 				r2 = cons.R2[particle.Id];
@@ -610,7 +629,6 @@ namespace Optimization.Optimizers.Extensions.LPSO
 			}
 
 			PSO.Settings settings = (PSO.Settings)Job.Optimizer.Configuration;
-			Parameter parameter = particle.Parameters[i];
 
 			double pg = 0;
 			double pl = 0;
