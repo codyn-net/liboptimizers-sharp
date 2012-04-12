@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using PSONS = Optimization.Optimizers.PSO;
 using System.Xml;
+using System.Text.RegularExpressions;
 
 namespace Optimization.Optimizers.PMPSO
 {
@@ -362,41 +363,72 @@ namespace Optimization.Optimizers.PMPSO
 			return true;
 		}
 		
-		private bool AddParameterSet(MutationSet s, XmlNode node, bool parseSingle)
+		private List<string> MatchParameterNames(string pattern)
 		{
-			XmlNodeList parameters = node.SelectNodes("parameter");
-			List<string> names = new List<string>();
+			Regex r;
+
+			r = new Regex(pattern);
 			
-			if (parameters.Count == 0 && parseSingle)
+			List<string> ret = new List<string>();
+			
+			foreach (Parameter parameter in Parameters)
 			{
-				names.AddRange(node.InnerText.Split(','));
-			}
-			else
-			{
-				foreach (XmlNode n in parameters)
+				if (r.IsMatch(parameter.Name))
 				{
-					names.Add(n.Value);
+					ret.Add(parameter.Name);
 				}
 			}
 			
-			return AddParameterSet(s, names.ToArray());
+			return ret;
+		}
+		
+		private string[] ParameterSetNames(XmlNode node)
+		{
+			XmlAttribute attr = node.Attributes["match"];
+			
+			if (attr != null && attr.Value == "regex")
+			{
+				return MatchParameterNames(node.InnerText).ToArray();
+			}
+			else
+			{
+				return node.InnerText.Split(',');
+			}
 		}
 		
 		private void ParseMutationSet(XmlNode node)
 		{
 			MutationSet s = new MutationSet();
 			
-			// First add the single parameter nodes
-			if (!AddParameterSet(s, node, false))
+			XmlNodeList parameters = node.SelectNodes("parameters");
+			XmlNodeList parameter = node.SelectNodes("parameter");
+			
+			if (parameters.Count == 0 && parameter.Count == 0)
 			{
-				return;
+				if (!AddParameterSet(s, ParameterSetNames(node)))
+				{
+					return;
+				}
 			}
 			
-			XmlNodeList parameters = node.SelectNodes("parameters");
-			
-			foreach (XmlNode n in parameters)
+			foreach (XmlNode p in parameter)
 			{
-				if (!AddParameterSet(s, n, true))
+				if (!AddParameterSet(s, ParameterSetNames(p)))
+				{
+					return;
+				}
+			}
+			
+			foreach (XmlNode p in parameters)
+			{
+				List<string> names = new List<string>();
+
+				foreach (XmlNode c in p.SelectNodes("parameter"))
+				{
+					names.AddRange(ParameterSetNames(c));
+				}
+				
+				if (!AddParameterSet(s, names.ToArray()))
 				{
 					return;
 				}

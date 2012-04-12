@@ -1,11 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Xml;
+using System.Data;
 
 namespace Optimization.Optimizers.GA
 {
 	[Optimization.Attributes.OptimizerAttribute(Description="Genetic Algorithm")]
 	public class GA : Optimization.Optimizer
 	{
+		private class ParameterAugmentation
+		{
+			public Biorob.Math.Expression MutationProbability;
+			public Biorob.Math.Expression MutationRate;
+			public bool IsDiscrete;
+			
+			public ParameterAugmentation()
+			{
+			}
+		}
+
 		private Biorob.Math.Expression d_tournamentSize;
 		private Biorob.Math.Expression d_tournamentProbability;
 		private Biorob.Math.Expression d_mutationProbability;
@@ -13,6 +26,7 @@ namespace Optimization.Optimizers.GA
 		private Biorob.Math.Expression d_crossoverProbability;
 		
 		private Dictionary<string, object> d_context;
+		private List<ParameterAugmentation> d_parameterAugmentation;
 
 		// Override 'Configuration' property returning subclassed Settings
 		public new Optimization.Optimizers.GA.Settings Configuration
@@ -44,11 +58,30 @@ namespace Optimization.Optimizers.GA
 			d_mutationRate.Parse(Configuration.MutationRate);
 		}
 		
-		public override void Initialize ()
+		public override void Initialize()
 		{
 			base.Initialize();
 			
 			SetupExpressions();
+			StoreAugmentation();
+		}
+		
+		private void StoreAugmentation()
+		{
+			Storage.Query("ALTER TABLE `parameters` ADD COLUMN `mutation_rate` TEXT");
+			Storage.Query("ALTER TABLE `parameters` ADD COLUMN `mutation_probability` TEXT");
+			Storage.Query("ALTER TABLE `parameters` ADD COLUMN `discrete` INT");
+			
+			for (int i = 0; i < Parameters.Count; ++i)
+			{
+				ParameterAugmentation aug = d_parameterAugmentation[i];
+				
+				Storage.Query("UPDATE `parameters` SET `mutation_rate` = @0, `mutation_probability` = @1, `discrete` = @2 WHERE `name` = @3",
+				              aug.MutationRate != null ? aug.MutationRate.Text : null,
+				              aug.MutationProbability != null ? aug.MutationProbability.Text : null,
+				              aug.IsDiscrete ? 1 : 0,
+				              Parameters[i].Name);
+			}
 		}
 		
 		protected override Settings CreateSettings()
@@ -56,7 +89,7 @@ namespace Optimization.Optimizers.GA
 			return new Optimization.Optimizers.GA.Settings();
 		}
 		
-		protected override void IncrementIteration ()
+		protected override void IncrementIteration()
 		{
 			base.IncrementIteration();
 			
@@ -158,7 +191,40 @@ namespace Optimization.Optimizers.GA
 			return ret;
 		}
 		
-		private void Mutate(Parameter parameter, double mutationRate)
+		public override void InitializePopulation()
+		{
+			base.InitializePopulation();
+			
+			foreach (Solution solution in Population)
+			{
+				for (int i = 0; i < solution.Parameters.Count; ++i)
+				{
+					EnsureDiscrete(solution.Parameters[i], i);
+				}
+			}
+		}
+		
+		private void EnsureDiscrete(Parameter parameter)
+		{
+			EnsureDiscrete(parameter, -1);
+		}
+		
+		private void EnsureDiscrete(Parameter parameter, int idx)
+		{
+			if (idx < 0)
+			{
+				idx = Parameters.IndexOf(parameter);
+			}
+			
+			if (d_parameterAugmentation[idx].IsDiscrete)
+			{
+				double v = Math.Round(parameter.Value);
+				
+				parameter.Value = Math.Min(Math.Max(v, Math.Ceiling(parameter.Boundary.Min)), Math.Floor(parameter.Boundary.Max));
+			}
+		}
+		
+		private void Mutate(Parameter parameter, double mutationRate, int idx)
 		{
 			double part = mutationRate * (parameter.Boundary.Max - parameter.Boundary.Min);
 
@@ -174,13 +240,18 @@ namespace Optimization.Optimizers.GA
 			{
 				parameter.Value = parameter.Boundary.Min;
 			}
+			
+			EnsureDiscrete(parameter, idx);
 		}
 		
 		private List<Solution> Reproduce(List<Solution> parents)
 		{
-			double mutationProbability = d_mutationProbability.Evaluate(d_context);
-			double crossoverProbability = d_crossoverProbability.Evaluate(d_context);
+			double globalMutationProbability;
+			double crossoverProbability;
 			List<Solution> population = new List<Solution>();
+			
+			globalMutationProbability = d_mutationProbability.Evaluate(d_context);
+			crossoverProbability = d_crossoverProbability.Evaluate(d_context);
 			
 			for (int i = 0; i < Configuration.PopulationSize; ++i)
 			{
@@ -201,17 +272,35 @@ namespace Optimization.Optimizers.GA
 				}
 				
 				child.Id = (uint)i;
-				double mutationRate = d_mutationRate.Evaluate(d_context);
 				
 				// Apply mutation if necessary
-				foreach (Parameter parameter in child.Parameters)
+				for (int j = 0; j < child.Parameters.Count; ++j)
 				{
-					if (State.Random.NextDouble() <= mutationProbability)
+					ParameterAugmentation aug = d_parameterAugmentation[j];
+					double mutprob = globalMutationProbability;
+					
+					if (aug.MutationProbability != null)
 					{
-						Mutate(parameter, mutationRate);
+						mutprob = aug.MutationProbability.Evaluate(d_context);
+					}
+
+					if (State.Random.NextDouble() <= mutprob)
+					{
+						double mutrate;
+						
+						if (aug.MutationRate != null)
+						{
+							mutrate = aug.MutationRate.Evaluate(d_context);
+						}
+						else
+						{
+							mutrate = d_mutationRate.Evaluate(d_context);
+						}
+
+						Mutate(child.Parameters[j], mutrate, j);
 					}
 				}
-				
+
 				population.Add(child);
 			}
 			
@@ -239,7 +328,85 @@ namespace Optimization.Optimizers.GA
 		{
 			base.FromStorage(storage, optimizer);
 			
+			d_parameterAugmentation = new List<ParameterAugmentation>(Parameters.Count);
+			for (int i = 0; i < Parameters.Count; ++i)
+			{
+				d_parameterAugmentation.Add(null);
+			}
+			
+			Storage.Query("SELECT `name`, `mutation_rate`, `mutation_probability`, `discrete` FROM `parameters` ORDER BY `id`", delegate (IDataReader reader) {
+				string name = reader.GetString(0);
+				object mutrate = reader.GetValue(1);
+				object mutprob = reader.GetValue(2);
+				bool discrete = reader.GetInt32(3) == 1;
+				
+				ParameterAugmentation aug = new ParameterAugmentation();
+				
+				aug.IsDiscrete = discrete;
+				
+				int idx = Parameters.IndexOf(Parameter(name));
+				
+				if (mutrate != null)
+				{
+					Biorob.Math.Expression.Create(reader.GetString(1), out aug.MutationRate);
+				}
+				
+				if (mutprob != null)
+				{
+					Biorob.Math.Expression.Create(reader.GetString(2), out aug.MutationProbability);
+				}
+				
+				d_parameterAugmentation[idx] = aug;
+				return true;
+			});
+			
 			SetupExpressions();
+		}
+		
+		public override void FromXml(XmlNode root)
+		{
+			base.FromXml(root);
+			
+			d_parameterAugmentation = new List<ParameterAugmentation>(Parameters.Count);
+			
+			for (int i = 0; i < Parameters.Count; ++i)
+			{
+				d_parameterAugmentation.Add(null);
+			}
+			
+			foreach (XmlNode node in root.SelectNodes("parameters/parameter"))
+			{
+				XmlAttribute mutprob = node.Attributes["mutation-probability"];
+				XmlAttribute mutrate = node.Attributes["mutation-rate"];
+				XmlAttribute isdisc = node.Attributes["discrete"];
+				XmlAttribute name = node.Attributes["name"];
+				
+				Parameter param = Parameter(name.Value);
+				int idx = Parameters.IndexOf(param);
+				
+				ParameterAugmentation aug = new ParameterAugmentation();
+				
+				if (mutprob != null)
+				{
+					Biorob.Math.Expression.Create(mutprob.Value, out aug.MutationProbability);
+				}
+				
+				if (mutrate != null)
+				{
+					Biorob.Math.Expression.Create(mutrate.Value, out aug.MutationRate);
+				}
+				
+				if (isdisc != null)
+				{
+					aug.IsDiscrete = bool.Parse(isdisc.Value);
+				}
+				else
+				{
+					aug.IsDiscrete = false;
+				}
+				
+				d_parameterAugmentation[idx] = aug;
+			}
 		}
 	}
 }

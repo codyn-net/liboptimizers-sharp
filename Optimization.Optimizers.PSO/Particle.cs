@@ -27,8 +27,8 @@ namespace Optimization.Optimizers.PSO
 {
 	public class Particle : Solution
 	{
-		List<double> d_velocity;
-		Particle d_personalBest;
+		private List<double> d_velocity;
+		private Particle d_personalBest;
 		
 		public Particle(uint id, Fitness fitness, Optimization.State state) : base (id, fitness, state)
 		{
@@ -279,12 +279,25 @@ namespace Optimization.Optimizers.PSO
 			d_velocity.Add(State.Random.Range(-span, span) * factor);
 		}
 		
-		public List<double> Velocity
+		public double[] Velocity
 		{
 			get
 			{
-				return d_velocity;
+				return d_velocity.ToArray();
 			}
+			set
+			{
+				d_velocity.Clear();
+				d_velocity.AddRange(value);
+				
+				UpdateVelocityData();
+			}
+		}
+		
+		public void SetVelocity(int idx, double vel)
+		{
+			d_velocity[idx] = vel;
+			UpdateVelocityData();
 		}
 		
 		public virtual Particle PersonalBest

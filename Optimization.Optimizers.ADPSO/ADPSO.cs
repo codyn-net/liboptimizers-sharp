@@ -99,7 +99,7 @@ namespace Optimization.Optimizers.ADPSO
 		
 		protected void Bounce(Particle p1, Particle p2)
 		{
-			for (int i = 0; i < p1.Velocity.Count; ++i)
+			for (int i = 0; i < p1.Velocity.Length; ++i)
 			{
 				// Bounce position
 				double ov1 = p1.Velocity[i];

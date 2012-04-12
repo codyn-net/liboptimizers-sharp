@@ -78,16 +78,41 @@ namespace Optimization.Optimizers.PSO
 		
 		protected override void UpdateBest()
 		{
+			base.UpdateBest();
+			
 			foreach (Solution sol in Population)
 			{
-				((Particle)sol).UpdateBest();
-			}
+				bool made = false;
+				Particle particle = (Particle)sol;
 
-			base.UpdateBest();
+				foreach (IPSOExtension extension in d_extensions)
+				{
+					if (extension.UpdateParticleBest(particle))
+					{
+						made = true;
+						break;
+					}
+				}
+				
+				if (!made)
+				{
+					particle.UpdateBest();
+				}
+			}
 		}
 		
 		protected virtual Particle GetUpdateBest(Particle particle)
 		{
+			foreach (IPSOExtension ext in d_extensions)
+			{
+				Particle ret = ext.GetUpdateBest(particle);
+				
+				if (ret != null)
+				{
+					return ret;
+				}
+			}
+
 			return (Particle)Best;
 		}
 		
@@ -121,6 +146,14 @@ namespace Optimization.Optimizers.PSO
 			}
 		}
 		
+		private void ValidateVelocityUpdate(Particle particle, double[] velocityUpdate)
+		{
+			foreach (IPSOExtension ext in d_extensions)
+			{
+				ext.ValidateVelocityUpdate(particle, velocityUpdate);
+			}
+		}
+		
 		public override void Update(Solution solution)
 		{
 			Particle particle = (Particle)solution;
@@ -133,6 +166,8 @@ namespace Optimization.Optimizers.PSO
 			{
 				velocityUpdate[i] = CalculateVelocityUpdate(particle, best, i);
 			}
+			
+			ValidateVelocityUpdate(particle, velocityUpdate);
 
 			// Update is implemented on the particle
 			particle.Update(velocityUpdate);

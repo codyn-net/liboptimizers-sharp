@@ -50,6 +50,8 @@ FILES = \
 	Optimization.Optimizers.ADPSO/Settings.cs \
 	Optimization.Optimizers.GA/GA.cs \
 	Optimization.Optimizers.GA/Settings.cs \
+	Optimization.Optimizers.GCPSO/GCPSO.cs \
+	Optimization.Optimizers.GCPSO/Settings.cs \
 	Optimization.Optimizers.PMPSO/Fusion.cs \
 	Optimization.Optimizers.PMPSO/MutationSet.cs \
 	Optimization.Optimizers.PMPSO/Neighborhood.cs \
@@ -70,7 +72,15 @@ FILES = \
 	Optimization.Optimizers.SPSA/Solution.cs \
 	Optimization.Optimizers.SPSA/Algorithm.cs \
 	Optimization.Optimizers.Extensions.RegPSO/RegPSO.cs \
-	Optimization.Optimizers.Extensions.RegPSO/Settings.cs
+	Optimization.Optimizers.Extensions.RegPSO/Settings.cs \
+	Optimization.Optimizers.Extensions.LPSO/ConstraintMatrix.cs \
+	Optimization.Optimizers.Extensions.LPSO/Linear.cs \
+	Optimization.Optimizers.Extensions.LPSO/LPSO.cs \
+	Optimization.Optimizers.Extensions.LPSO/Settings.cs \
+	Optimization.Optimizers.Extensions.StagePSO/StagePSO.cs \
+	Optimization.Optimizers.Extensions.StagePSO/Stage.cs \
+	Optimization.Optimizers.Extensions.DPSO/DPSO.cs \
+	Optimization.Optimizers.Extensions.DPSO/Settings.cs
 
 DATA_FILES = 
 
