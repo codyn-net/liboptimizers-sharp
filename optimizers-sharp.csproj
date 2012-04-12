@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -9,6 +9,7 @@
     <OutputType>Library</OutputType>
     <AssemblyName>Optimization.Optimizers</AssemblyName>
     <RootNamespace>Optimization.Optimizers</RootNamespace>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,11 +32,16 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <Reference Include="Optimization, Version=1.0.3734.17462, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\.packeteer\install\lib\liboptimization-sharp\Optimization.dll</HintPath>
-    </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="Optimization, Version=1.0.4204.22552, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\home\jvanden\.packeteer\install-impedance\lib\liboptimization2-sharp\Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="Biorob.Math, Version=1.0.4282.32900, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\home\jvanden\.packeteer\install-opti\lib\libbiorob-math1-sharp\Biorob.Math.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Optimization.Optimizers\AssemblyInfo.cs" />
@@ -74,6 +80,8 @@
     <Compile Include="Optimization.Optimizers.Extensions.StagePSO\Stage.cs" />
     <Compile Include="Optimization.Optimizers.GCPSO\Settings.cs" />
     <Compile Include="Optimization.Optimizers.GCPSO\GCPSO.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.DPSO\DPSO.cs" />
+    <Compile Include="Optimization.Optimizers.Extensions.DPSO\Settings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -86,9 +94,4 @@
     <Folder Include="Optimization.Optimizers.Extensions.StagePSO\" />
     <Folder Include="Optimization.Optimizers.GCPSO\" />
   </ItemGroup>
-  <ProjectExtensions>
-    <MonoDevelop>
-      <Properties InternalTargetFrameworkVersion="3.5" />
-    </MonoDevelop>
-  </ProjectExtensions>
 </Project>

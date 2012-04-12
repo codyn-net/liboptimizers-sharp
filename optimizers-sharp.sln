@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "optimizers-sharp", "optimizers-sharp.csproj", "{61CC5527-3D51-46F7-86D2-99D724678773}"
 EndProject
 Global
@@ -16,5 +16,46 @@ Global
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = optimizers-sharp.csproj
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = None
+		$1.ResourceNamePolicy = FileFormatDefault
+		$0.TextStylePolicy = $2
+		$2.TabWidth = 4
+		$2.NoTabsAfterNonTabs = True
+		$2.RemoveTrailingWhitespace = True
+		$2.inheritsSet = Mono
+		$2.inheritsScope = text/plain
+		$2.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $3
+		$3.AnonymousMethodBraceStyle = NextLine
+		$3.PropertyBraceStyle = NextLine
+		$3.PropertyGetBraceStyle = NextLine
+		$3.PropertySetBraceStyle = NextLine
+		$3.StatementBraceStyle = NextLine
+		$3.IfElseBraceForcement = AddBraces
+		$3.ForBraceForcement = AddBraces
+		$3.WhileBraceForcement = AddBraces
+		$3.UsingBraceForcement = AddBraces
+		$3.FixedBraceForcement = AddBraces
+		$3.PlaceElseOnNewLine = True
+		$3.PlaceCatchOnNewLine = True
+		$3.PlaceFinallyOnNewLine = True
+		$3.BeforeMethodDeclarationParentheses = False
+		$3.BeforeMethodCallParentheses = False
+		$3.BeforeConstructorDeclarationParentheses = False
+		$3.BeforeIndexerDeclarationBracket = False
+		$3.BeforeDelegateDeclarationParentheses = False
+		$3.NewParentheses = False
+		$3.SpacesBeforeBrackets = False
+		$3.inheritsSet = Mono
+		$3.inheritsScope = text/x-csharp
+		$3.scope = text/x-csharp
+		$0.TextStylePolicy = $4
+		$4.FileWidth = 120
+		$4.TabWidth = 4
+		$4.inheritsSet = Mono
+		$4.inheritsScope = text/plain
+		$4.scope = text/plain
 	EndGlobalSection
 EndGlobal
