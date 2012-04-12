@@ -23,6 +23,11 @@ using System.Collections.Generic;
 
 namespace Optimization.Optimizers.GCPSO
 {
+	/* An implementation of Guaranteed Convergence Particle Swarm Optimization
+	 *
+	 * [1] van den Bergh, F. & Engelbrecht, A.P. (2002). A new locally convergent particle swarm optimiser.
+	       Systems, Man and Cybernetics, 2002 IEEE International Conference on,3, 6 pp. vol.3.
+	 */
 	[Optimization.Attributes.Extension(Description="Guaranteed Convergence Particle Swarm Optimization", AppliesTo = new Type[] {typeof(PSO.PSO)})]
 	public class GCPSO : Optimization.Extension, PSO.IPSOExtension
 	{
@@ -128,17 +133,16 @@ namespace Optimization.Optimizers.GCPSO
 			
 			if (d_successes > Configuration.SuccessThreshold)
 			{
-				d_sampleSize *= 2;
+				d_sampleSize *= 0.5;
+				d_successes = 0;
 			}
 			else if (d_failures > Configuration.FailureThreshold)
 			{
-				d_sampleSize *= 0.5;
-				
-				if (d_sampleSize < Configuration.MinimumSampleSize)
-				{
-					d_sampleSize = Configuration.MinimumSampleSize;
-				}
+				d_sampleSize *= 2;
+				d_failures = 0;
 			}
+			
+			d_sampleSize = System.Math.Max(Configuration.MinimumSampleSize, System.Math.Min(0.1, d_sampleSize));
 			
 			Job.Optimizer.Storage.Query("INSERT INTO `gcpso_samplesize` (`iteration`, `successes`, `failures`, `sample_size`) VALUES (@0, @1, @2, @3)",
 			                            Job.Optimizer.CurrentIteration,
