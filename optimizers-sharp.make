@@ -78,7 +78,9 @@ FILES = \
 	Optimization.Optimizers.Extensions.LPSO/LPSO.cs \
 	Optimization.Optimizers.Extensions.LPSO/Settings.cs \
 	Optimization.Optimizers.Extensions.StagePSO/StagePSO.cs \
-	Optimization.Optimizers.Extensions.StagePSO/Stage.cs
+	Optimization.Optimizers.Extensions.StagePSO/Stage.cs \
+	Optimization.Optimizers.Extensions.DPSO/DPSO.cs \
+	Optimization.Optimizers.Extensions.DPSO/Settings.cs
 
 DATA_FILES = 
 
