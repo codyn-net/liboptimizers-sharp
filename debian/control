@@ -5,8 +5,9 @@ Build-Depends: debhelper (>= 7),
                autotools-dev,
 			   cdbs,
 			   pkg-config,
-			   mono-devel | mono-gmcs,
-			   liboptimization2-sharp (>= 2.12)
+			   mono-gmcs,
+			   liboptimization2-sharp (>= 2.12),
+               libtool
 Standards-Version: 3.8.0
 Section: libs
 Homepage: http://birg.epfl.ch
