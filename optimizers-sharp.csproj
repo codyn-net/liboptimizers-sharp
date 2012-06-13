@@ -37,10 +37,12 @@
     <Reference Include="Optimization, Version=1.0.4204.22552, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\home\jvanden\.packeteer\install-impedance\lib\liboptimization2-sharp\Optimization.dll</HintPath>
+      <Package>optimization-sharp-2.0</Package>
     </Reference>
     <Reference Include="Biorob.Math, Version=1.0.4282.32900, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\home\jvanden\.packeteer\install-opti\lib\libbiorob-math1-sharp\Biorob.Math.dll</HintPath>
+      <Package>biorob-math-sharp-1.0</Package>
     </Reference>
   </ItemGroup>
   <ItemGroup>
