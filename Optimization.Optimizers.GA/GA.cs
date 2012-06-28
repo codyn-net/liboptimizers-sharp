@@ -24,7 +24,6 @@ namespace Optimization.Optimizers.GA
 		private Biorob.Math.Expression d_mutationProbability;
 		private Biorob.Math.Expression d_mutationRate;
 		private Biorob.Math.Expression d_crossoverProbability;
-		
 		private Dictionary<string, object> d_context;
 		private List<ParameterAugmentation> d_parameterAugmentation;
 
@@ -127,8 +126,8 @@ namespace Optimization.Optimizers.GA
 			List<Solution> ret = new List<Solution>();
 			List<Solution> population = new List<Solution>(Population);
 			
-			uint tournamentSize = (uint)d_tournamentSize.Evaluate(d_context);
-			double tournamentProbability = d_tournamentProbability.Evaluate(d_context);
+			uint tournamentSize = (uint)d_tournamentSize.Evaluate(Biorob.Math.Constants.Context, d_context);
+			double tournamentProbability = d_tournamentProbability.Evaluate(Biorob.Math.Constants.Context, d_context);
 			
 			Solution[] tournament = new Solution[tournamentSize];
 			
@@ -165,12 +164,12 @@ namespace Optimization.Optimizers.GA
 		{
 			switch (Configuration.Selection)
 			{
-				case Optimization.Optimizers.GA.Settings.SelectionType.Tournament:
-					return SelectTournament();
-				case Optimization.Optimizers.GA.Settings.SelectionType.RouletteWheel:
-					return SelectRouletteWheel();
-				default:
-					return new List<Solution>(Population);
+			case Optimization.Optimizers.GA.Settings.SelectionType.Tournament:
+				return SelectTournament();
+			case Optimization.Optimizers.GA.Settings.SelectionType.RouletteWheel:
+				return SelectRouletteWheel();
+			default:
+				return new List<Solution>(Population);
 			}
 		}
 		
@@ -250,8 +249,8 @@ namespace Optimization.Optimizers.GA
 			double crossoverProbability;
 			List<Solution> population = new List<Solution>();
 			
-			globalMutationProbability = d_mutationProbability.Evaluate(d_context);
-			crossoverProbability = d_crossoverProbability.Evaluate(d_context);
+			globalMutationProbability = d_mutationProbability.Evaluate(Biorob.Math.Constants.Context, d_context);
+			crossoverProbability = d_crossoverProbability.Evaluate(Biorob.Math.Constants.Context, d_context);
 			
 			for (int i = 0; i < Configuration.PopulationSize; ++i)
 			{
@@ -281,7 +280,7 @@ namespace Optimization.Optimizers.GA
 					
 					if (aug.MutationProbability != null)
 					{
-						mutprob = aug.MutationProbability.Evaluate(d_context);
+						mutprob = aug.MutationProbability.Evaluate(Biorob.Math.Constants.Context, d_context);
 					}
 
 					if (State.Random.NextDouble() <= mutprob)
@@ -290,11 +289,11 @@ namespace Optimization.Optimizers.GA
 						
 						if (aug.MutationRate != null)
 						{
-							mutrate = aug.MutationRate.Evaluate(d_context);
+							mutrate = aug.MutationRate.Evaluate(Biorob.Math.Constants.Context, d_context);
 						}
 						else
 						{
-							mutrate = d_mutationRate.Evaluate(d_context);
+							mutrate = d_mutationRate.Evaluate(Biorob.Math.Constants.Context, d_context);
 						}
 
 						Mutate(child.Parameters[j], mutrate, j);
