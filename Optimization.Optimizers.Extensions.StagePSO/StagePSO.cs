@@ -212,6 +212,14 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			}
 		}
 
+		private void UpdateFitnessStage(Solution sol)
+		{
+			PSO.Particle p = (PSO.Particle)sol;
+
+			int stage = int.Parse(p.Data["StagePSO::stage"] as string);
+			p.Fitness.SetUserData("StagePSOStage", d_stages[stage]);
+		}
+
 		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer)
 		{
 			base.FromStorage(storage, optimizer);
@@ -219,13 +227,24 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			
 			storage.Query("SELECT `expression`, `condition` FROM `stages` ORDER BY `id`", delegate (IDataReader reader)
 			{
-				string expression = (string)reader[0];
-				string condition = (string)reader[1];
+				string expression = Storage.Storage.As<string>(reader[0]);
+				string condition = Storage.Storage.As<string>(reader[1]);
 
 				d_stages.Add(new Stage(expression, condition, priority++));
 				return true;
 			});
-			
+
+			foreach (Solution sol in Job.Optimizer.Population)
+			{
+				UpdateFitnessStage(sol);
+
+				PSO.Particle p = (PSO.Particle)sol;
+
+				UpdateFitnessStage(p.PersonalBest);
+			}
+
+			UpdateFitnessStage(Job.Optimizer.Best);
+
 			Setup();
 		}
 	}
