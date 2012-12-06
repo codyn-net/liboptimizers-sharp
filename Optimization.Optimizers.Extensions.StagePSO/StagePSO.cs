@@ -29,13 +29,11 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 	public class StagePSO : Extension
 	{
 		private List<Stage> d_stages;
-		private Dictionary<Solution, Stage> d_neighborhoods;
 		private List<object> d_lastBest;
 
 		public StagePSO(Job job) : base(job)
 		{
 			d_stages = new List<Stage>();
-			d_neighborhoods = new Dictionary<Solution, Stage>();
 			d_lastBest = new List<object>();
 		}
 		
@@ -48,16 +46,6 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 		{
 			Stage s1 = f1.GetUserData<Stage>("StagePSOStage");
 			Stage s2 = f2.GetUserData<Stage>("StagePSOStage");
-			
-			// Just because in the first iteration, the progress is sent
-			// before calculating the stages
-			if (s1 == null && s2 == null)
-			{
-				UpdateNeighborhoods();
-
-				s1 = f1.GetUserData<Stage>("StagePSOStage");
-				s2 = f2.GetUserData<Stage>("StagePSOStage");
-			}
 			
 			if (s1.Priority > s2.Priority)
 			{
@@ -85,7 +73,7 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			Setup();
 		}
 		
-		public override bool SuppressConvergenceCalculation ()
+		public override bool SuppressConvergenceCalculation()
 		{
 			return true;
 		}
@@ -167,46 +155,7 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			
 			return false;
 		}
-		
-		private void UpdateNeighborhoods()
-		{
-			// Collect solutions in stages
-			List<Solution> population = new List<Solution>(Job.Optimizer.Population);
-			
-			d_neighborhoods.Clear();
-			
-			for (int i = 0; i < d_stages.Count; ++i)
-			{
-				Stage stage = d_stages[i];
-				Stage next = i != d_stages.Count - 1 ? d_stages[i + 1] : null;
-				
-				stage.Clear();
-				
-				population.RemoveAll(delegate (Solution sol) {
-					PSO.Particle particle = (PSO.Particle)sol;
 
-					if (next == null || !next.Validate(particle.Fitness.Context))
-					{
-						stage.Add(particle);
-						d_neighborhoods[sol] = stage;
-						
-						particle.Fitness.SetUserData("StagePSOStage", stage);
-						particle.Fitness.Value = stage.Value(particle.Fitness.Context);
-						
-						particle.Data["StagePSO::stage"] = i;
-						particle.Data["StagePSO::waslast"] = particle.Data["StagePSO::islast"];
-						particle.Data["StagePSO::islast"] = (i == d_stages.Count - 1 ? "1" : "0");
-						
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				});
-			}
-		}
-		
 		public override void Initialize()
 		{
 			base.Initialize();
@@ -237,7 +186,40 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 				              stage.Expression.Text);
 			}
 		}
-		
+
+		public override void UpdateFitness(Solution solution)
+		{
+			base.UpdateFitness(solution);
+
+			PSO.Particle particle = (PSO.Particle)solution;
+
+			for (int i = 0; i < d_stages.Count; ++i)
+			{
+				Stage stage = d_stages[i];
+				Stage next = i != d_stages.Count - 1 ? d_stages[i + 1] : null;
+
+				if (next == null || !next.Validate(particle.Fitness.Context))
+				{
+					particle.Fitness.SetUserData("StagePSOStage", stage);
+					particle.Fitness.Value = stage.Value(particle.Fitness.Context);
+
+					particle.Data["StagePSO::stage"] = i;
+					particle.Data["StagePSO::waslast"] = particle.Data["StagePSO::islast"];
+					particle.Data["StagePSO::islast"] = (i == d_stages.Count - 1 ? "1" : "0");
+
+					break;
+				}
+			}
+		}
+
+		private void UpdateFitnessStage(Solution sol)
+		{
+			PSO.Particle p = (PSO.Particle)sol;
+
+			int stage = int.Parse(p.Data["StagePSO::stage"] as string);
+			p.Fitness.SetUserData("StagePSOStage", d_stages[stage]);
+		}
+
 		public override void FromStorage(Storage.Storage storage, Storage.Records.Optimizer optimizer)
 		{
 			base.FromStorage(storage, optimizer);
@@ -245,20 +227,25 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			
 			storage.Query("SELECT `expression`, `condition` FROM `stages` ORDER BY `id`", delegate (IDataReader reader)
 			{
-				string expression = (string)reader[0];
-				string condition = (string)reader[1];
+				string expression = Storage.Storage.As<string>(reader[0]);
+				string condition = Storage.Storage.As<string>(reader[1]);
 
 				d_stages.Add(new Stage(expression, condition, priority++));
 				return true;
 			});
-			
+
+			foreach (Solution sol in Job.Optimizer.Population)
+			{
+				UpdateFitnessStage(sol);
+
+				PSO.Particle p = (PSO.Particle)sol;
+
+				UpdateFitnessStage(p.PersonalBest);
+			}
+
+			UpdateFitnessStage(Job.Optimizer.Best);
+
 			Setup();
-		}
-		
-		public override void Next()
-		{
-			base.Next();
-			UpdateNeighborhoods();
 		}
 	}
 }

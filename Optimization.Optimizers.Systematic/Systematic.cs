@@ -74,6 +74,11 @@ namespace Optimization.Optimizers.Systematic
 				return base.Configuration as Optimization.Optimizers.Systematic.Settings;
 			}
 		}
+
+		public override uint NumId
+		{
+			get { return d_numberOfSolutions; }
+		}
 		
 		protected override Settings CreateSettings()
 		{

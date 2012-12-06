@@ -8,13 +8,10 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 	{
 		private Biorob.Math.Expression d_condition;
 		private Biorob.Math.Expression d_expression;
-		private List<PSO.Particle> d_particles;
-		private PSO.Particle d_best;
 		private uint d_priority;
 		
 		public Stage(uint priority)
 		{
-			d_particles = new List<PSO.Particle>();
 			d_priority = priority;
 		}
 		
@@ -98,12 +95,6 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			}
 		}
 		
-		public void Clear()
-		{
-			d_particles.Clear();
-			d_best = null;
-		}
-		
 		public int Compare(Fitness f1, Fitness f2)
 		{
 			if (f1 == null && f2 == null)
@@ -138,34 +129,6 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			}
 			
 			return Compare(p1.Fitness, p2.Fitness);
-		}
-		
-		public int CompareToBest(PSO.Particle particle)
-		{
-			if (!Validate(particle))
-			{
-				return -1;
-			}
-
-			return Compare(particle, d_best);
-		}
-		
-		public void Add(PSO.Particle particle)
-		{
-			d_particles.Add(particle);
-			
-			if (CompareToBest(particle) > 0)
-			{
-				d_best = particle;
-			}
-		}
-		
-		public PSO.Particle Best
-		{
-			get
-			{
-				return d_best;
-			}
 		}
 	}
 }
