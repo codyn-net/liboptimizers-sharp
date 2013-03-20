@@ -120,7 +120,7 @@ namespace Optimization.Optimizers.PSO
 
 				Particle cmp = (Particle)Population[id];
 
-				if (ret == null || cmp.Fitness > ret.Fitness)
+				if (ret == null || cmp.PersonalBest.Fitness > ret.Fitness)
 				{
 					ret = cmp;
 				}
