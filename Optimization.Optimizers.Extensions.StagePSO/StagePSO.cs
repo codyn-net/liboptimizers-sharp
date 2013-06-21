@@ -64,10 +64,20 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 		{
 			uint priority = 0;
 			base.FromXml(root);
+
+			Stage prev = null;
 			
 			foreach (XmlNode node in root.SelectNodes("stage"))
 			{
-				d_stages.Add(new Stage(node, priority++));
+				var stage = new Stage(node, priority++);
+				d_stages.Add(stage);
+
+				if (prev != null && prev.Until != null && stage.Condition == null)
+				{
+					stage.Condition = prev.Until;
+				}
+
+				prev = stage;
 			}
 			
 			Setup();
