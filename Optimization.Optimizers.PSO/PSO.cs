@@ -22,6 +22,7 @@ using System;
 using System.Reflection;
 using Optimization;
 using System.Collections.Generic;
+using PSONS = Optimization.Optimizers.PSO;
 
 namespace Optimization.Optimizers.PSO
 {
@@ -32,11 +33,11 @@ namespace Optimization.Optimizers.PSO
 		private List<IPSOExtension> d_extensions;
 
 		// Override 'Configuration' property returning subclassed Settings
-		public new PSO.Settings Configuration
+		public new PSONS.Settings Configuration
 		{
 			get
 			{
-				return (PSO.Settings)base.Configuration;
+				return (PSONS.Settings)base.Configuration;
 			}
 		}
 		
@@ -100,6 +101,33 @@ namespace Optimization.Optimizers.PSO
 				}
 			}
 		}
+
+		private Particle GetUpdateBestRing(Particle particle)
+		{
+			int half = Configuration.NeighborhoodSize / 2;
+			Particle ret = null;
+
+			for (int i = (int)particle.Id - half; i <= (int)particle.Id + half; ++i)
+			{
+				int id = i;
+
+				while (id < 0)
+				{
+					id = Population.Count + id;
+				}
+
+				id = id % Population.Count;
+
+				Particle cmp = (Particle)Population[id];
+
+				if (ret == null || cmp.PersonalBest.Fitness > ret.Fitness)
+				{
+					ret = cmp;
+				}
+			}
+
+			return ret;
+		}
 		
 		protected virtual Particle GetUpdateBest(Particle particle)
 		{
@@ -111,6 +139,13 @@ namespace Optimization.Optimizers.PSO
 				{
 					return ret;
 				}
+			}
+
+			switch (Configuration.Topology)
+			{
+			case PSONS.Settings.TopologyType.Ring:
+				// Get the best between the N neighbors of the particle
+				return GetUpdateBestRing(particle);
 			}
 
 			return (Particle)Best;

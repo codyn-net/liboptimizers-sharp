@@ -7,6 +7,7 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 	public class Stage
 	{
 		private Biorob.Math.Expression d_condition;
+		private Biorob.Math.Expression d_until;
 		private Biorob.Math.Expression d_expression;
 		private uint d_priority;
 		
@@ -36,6 +37,13 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 			if (attr != null)
 			{
 				Biorob.Math.Expression.Create(attr.Value, out d_condition);
+			}
+
+			attr = node.Attributes["until"];
+			
+			if (attr != null)
+			{
+				Biorob.Math.Expression.Create(attr.Value, out d_until);
 			}
 		}
 		
@@ -78,21 +86,21 @@ namespace Optimization.Optimizers.Extensions.StagePSO
 		{
 			return d_expression.Evaluate(context);
 		}
+
+		public Biorob.Math.Expression Until
+		{
+			get { return d_until; }
+		}
 		
 		public Biorob.Math.Expression Condition
 		{
-			get
-			{
-				return d_condition;
-			}
+			get { return d_condition; }
+			set { d_condition = value; }
 		}
 		
 		public Biorob.Math.Expression Expression
 		{
-			get
-			{
-				return d_expression;
-			}
+			get { return d_expression; }
 		}
 		
 		public int Compare(Fitness f1, Fitness f2)

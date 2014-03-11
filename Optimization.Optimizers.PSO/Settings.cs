@@ -32,6 +32,12 @@ namespace Optimization.Optimizers.PSO
 			Stick,
 			Bounce
 		}
+
+		public enum TopologyType
+		{
+			None,
+			Ring
+		}
 		
 		[Setting("max-velocity", -1.0, Description="Maximum particle velocity (in fraction of parameter space)")]
 		public double MaxVelocity;
@@ -50,5 +56,12 @@ namespace Optimization.Optimizers.PSO
 
 		[Setting("boundary-damping", 0.95, Description="Boundary velocity damping when condition is Bounce")]
 		public double BoundaryDamping;
+
+		[Setting("topology", TopologyType.None, Description="Neighborhood topology")]
+		public TopologyType Topology;
+
+		[Setting("neighborhood-size", 2, Description="Size of the neighborhood (when applicable)")]
+		public int NeighborhoodSize;
 	}
+
 }
