@@ -1,3 +1,10 @@
+liboptimizers2-sharp (2.11-1) UNRELEASED; urgency=low
+
+  * New upstream release
+  * Added "until" keyword for StagePSO
+
+ -- Jesse van den Kieboom <jesse.vandenkieboom@epfl.ch>  Tue, 11 Mar 2014 14:48:20 +0100
+
 liboptimizers2-sharp (2.10-1) UNRELEASED; urgency=low
 
   * New upstream release
